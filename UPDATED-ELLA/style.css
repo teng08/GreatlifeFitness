@@ -1,0 +1,1398 @@
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* Navbar with gradient */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to bottom, #08054C, rgba(8, 5, 76, 0.9), rgba(8, 5, 76, 0));
+  color: white;
+  padding: 15px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar .logo img {
+  height: 60px; /* bigger logo */
+  width: auto;
+  display: block;
+}
+
+/* Hide Navbar smoothly */
+.navbar {
+  transition: top 0.4s ease-in-out;
+}
+
+
+/* Nav links */
+.nav-links {
+  display: flex;
+  list-style: none;
+}
+
+.nav-links li {
+  margin: 0 10px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: white;
+  font-size: 0.95rem;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+/* Hover underline */
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: gold;
+  transition: width 0.3s ease;
+}
+.nav-links a:hover::after {
+  width: 100%;
+}
+.nav-links a:hover {
+  color: gold;
+}
+.nav-links a.highlight {
+  color: gold;
+}
+
+/* Hamburger */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  gap: 5px;
+}
+.hamburger span {
+  display: block;
+  width: 25px;
+  height: 3px;
+  background: white;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+.hamburger.active span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+.hamburger.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+  z-index: 900;
+}
+.overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hero-content {
+  text-align: left;
+  width: 40%;
+}
+
+.hero {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -80px;
+  padding-top: 80px;
+  overflow: hidden;
+}
+.hero-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  filter: brightness(60%); /* darken video for text readability */
+}
+/* Hero Section for hero-bg image
+.hero {
+  background: url("images/hero-bg.jpg") center/cover no-repeat;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -80px; pull hero upward under navbar 
+  padding-top: 80px;  prevent hero text from hiding under navbar 
+} */
+.hero h1 {
+  font-size: 3.5rem;
+  margin-bottom: 10px;
+  color: #cdad7d;
+}
+.hero p {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+.btn {
+  background: linear-gradient(to bottom, #15294f, #652f7c);
+  padding: 20px 30px;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 30px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: inline-block;
+  color: white;
+}
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/*About Section*/
+.about-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 50px;
+
+  /* spacing */
+  padding: 6rem 8%;
+  margin: 6rem 0;
+
+  /* remove background from section */
+  background: none;
+  overflow: hidden;
+}
+
+/* CENTERED BACKGROUND STRIP */
+.about-section::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 100%;
+  height: 55%; /* adjust thickness here */
+
+    background-image: 
+            /* 1. The Overlay: a semi-transparent blue/dark color */
+            linear-gradient(rgba(0, 0, 100, 0.5), rgba(0, 0, 100, 0.6)),
+            /* 2. The Image: your original background image */
+            url("images/sceneric.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  z-index: 0;
+}
+
+/* KEEP CONTENT ABOVE BACKGROUND */
+.about-left,
+.about-right {
+  position: relative;
+  z-index: 1;
+}
+
+/* LEFT CONTENT */
+.about-left {
+  flex: 1;
+}
+
+.about-left h2 {
+  font-size: 45px;
+  margin-bottom: 30px;
+  font-family: "Alata", sans-serif;
+  color: #ffffff;
+}
+
+.about-left p {
+  font-size: 18px;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  max-width: 500px;
+  color: #ffffff;
+}
+
+/* BUTTON */
+.about-btn {
+  display: inline-block;
+  padding: 15px 55px;
+  background: linear-gradient(to bottom, #396ed0, #b66ed4);
+  color: #000;
+  font-size: 16px;
+  border-radius: 30px;
+  text-decoration: none;
+  transition: transform 0.3s ease;
+}
+
+.about-btn:hover {
+  transform: scale(1.08);
+}
+
+/* RIGHT VIDEO */
+.about-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.about-video {
+  width: 70%;
+  height: 600px;
+  border-radius: 15px;
+  object-fit: cover;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+/* =============================
+   MOBILE RESPONSIVE
+============================= */
+
+@media (max-width: 768px) {
+
+  .about-section {
+    flex-direction: column;
+    padding: 4rem 6%;
+    gap: 30px;
+  }
+
+  /* Make background strip taller on mobile */
+  .about-section::before {
+    height: 70%;
+  }
+
+  .about-left {
+    text-align: center;
+  }
+
+  .about-left h2 {
+    font-size: 2rem;
+  }
+
+  .about-left p {
+    font-size: 1rem;
+    max-width: 100%;
+  }
+
+  .about-btn {
+    padding: 12px 35px;
+    font-size: 14px;
+  }
+
+  .about-video {
+    width: auto;
+    height: 400px;
+  }
+}
+
+
+
+.sectionss {
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  max-width: 700px;
+  margin: 0 auto;
+  background: rgb(255, 255, 255);
+}
+
+/* WHY YOU SHOULD CHOOSE US?!?!?! CSSSS😱😱😱😱*/
+body {
+    margin: 0;
+    padding: 0;
+}
+.why-us-container{
+    background-image: 
+
+            /* 2. The Image: your original background image */
+            url("images/sceneric.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+	width: auto;
+    height: 30rem;
+    padding: 2rem;
+
+}
+
+.why-us-container h3{
+    text-align: center;
+    padding-right: 2rem;
+    padding-left: 2rem;
+    padding-bottom: 2rem;
+    font-family: Alata;
+    font-weight: normal;
+    font-size: 2.40rem;
+    color: #cdad7d;
+}
+
+.why-us {
+    display: flex;
+    justify-content: center;
+    gap: 3em;
+    padding-left: 5rem;
+    padding-right: 5rem;
+}
+
+.why-us-card {
+    border: 2px solid #cdad7d;;
+    padding: 1rem;
+    height: 20rem;
+    width: 11rem;
+}
+
+
+.why-us-card p{
+    color: white;
+    text-align: left;
+    font-family: Alata;
+    font-weight: normal;
+    font-size: 0.90rem;
+}
+
+/* Styles apply on screens 768px and WIDER */
+@media screen and (max-width: 600px) {
+    .why-us {
+
+        display: flex;
+        justify-content: center;
+        gap: 1em;
+        padding-left: 0rem;
+        padding-right: 0rem;
+    }
+
+    .why-us-container h3{
+        font-size: 1.40rem;
+    }
+
+    .why-us-card p{
+        font-size: 0.60rem;
+    }
+
+    .why-us-card{
+        width: 20rem;
+        height: 14rem;
+    }
+
+    .why-us-container{
+        padding: 0.40rem;
+        height: 23rem;
+    }
+}
+
+/* --------------------CAROUSEL------------------------------- */
+.carousel-container {
+    /* ... existing styles ... */
+    display: flex;
+    flex-direction: column;
+    gap: 0em;
+
+    /* --- THE FIX: Force Full Viewport Width and Center --- */
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    padding-top: 3rem;
+
+}
+.carousel-container{
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+	padding-bottom: 4rem;
+}
+
+.carousel-container h3{
+	font-family: Alata;
+	font-weight: normal;
+	font-size: 2rem;
+	color: rgb(62, 62, 62);
+	padding-left: 0.40rem;
+}
+
+.carousel {
+	width: 100%;
+	display: flex;
+	overflow-x: auto;
+}
+
+.carousel::-webkit-scrollbar {
+	display: none;
+}
+
+.group {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1em;
+	animation: spin 50s infinite linear;
+	padding-right: 1em;
+}
+
+.carousel-card {
+	flex: 0 0 5em;
+	height: 5em;
+	font-size: 3rem;
+	text-align: center;
+	display: flex; /* Recommended for centering the text within the card */
+    justify-content: center;
+    align-items: center;
+}
+
+.carousel-card img{
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+@keyframes spin {
+	from {translate: 0;}
+	to {translate: -100%;}
+}
+
+@media screen and (max-width: 768px) {
+	.card {
+		flex: 0 0 5em;
+		height: 5em;
+		background: cornflowerblue;
+		font-size: 1rem;
+		text-align: center;
+		align-content: center;
+	}
+	.carousel-container h3{
+		font-family: Alata;
+		font-weight: normal;
+		font-size: 2rem;
+		color: rgb(62, 62, 62);
+	}
+}
+
+
+
+/*------ANIMATION FOR CAROUSEL + WHY-US---*/
+
+@keyframes slide_up {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide_in_left {
+    from {
+        opacity: 0;
+        transform: translateX(-50%); /* Start way off the left */
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0); /* End at its natural position */
+    }
+}
+
+@keyframes slide_in_right {
+    from {
+        opacity: 0;
+        transform: translateX(50%); /* Start way off the right */
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0); /* End at its natural position */
+    }
+}
+
+/* --- INITIAL HIDDEN STATE (Applies to ALL elements with this class) --- */
+.js-animate-on-scroll {
+    opacity: 0; 
+    transition: none !important;
+}
+
+/* --- ANIMATION TRIGGER (Applies to ALL elements when JS adds 'is-visible') --- */
+.js-animate-on-scroll.is-visible {
+    animation: slide_up 0.9s ease-out forwards; /* Base animation run */
+}
+
+.js-animate-on-scroll.slide-left.is-visible {
+    animation: slide_in_left 1s ease-out forwards;
+}
+
+.js-animate-on-scroll.slide-right.is-visible {
+    animation: slide_in_right 1s ease-out forwards;
+}
+
+/* 2. The Staggered Delay for the Why Us Cards */
+.why-us-card.js-animate-on-scroll.is-visible:nth-child(1) { animation-delay: 0.5s; }
+.why-us-card.js-animate-on-scroll.is-visible:nth-child(2) { animation-delay: 0.7s; }
+.why-us-card.js-animate-on-scroll.is-visible:nth-child(3) { animation-delay: 0.9s; }
+
+/*wave-bg-wrapper*/
+.wave-bg-section {
+  background: url("images/wave-bg.jpg") no-repeat center bottom;
+  background-size: cover;
+  background-attachment: fixed; /* makes it stay in place */
+}
+
+.wave-bg-section {
+  padding-bottom: 140px;
+}
+
+.courts {
+  padding-bottom: 60px;
+}
+
+
+/* SECTION WRAPPER */
+.membership-section {
+  padding: 80px 20px;
+  background: transparent; 
+}
+
+/* FLEXBOX LAYOUT */
+.membership-container {
+  display: flex;
+  justify-content: center;
+  align-items: stretch; /* MATCH HEIGHT FEEL */
+  gap: 40px;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* LEFT BOX */
+.membership-box {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  padding: 30px 30px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.membership-content h2 {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  color: #333333;
+}
+
+/* BULLET STYLE */
+.membership-box ul {
+  padding-left: 0;
+}
+
+.membership-box li {
+  list-style: none;
+  margin-bottom: 14px;
+  font-size: 1rem;
+}
+
+/* RIGHT IMAGE BOX — MAKE IT A CARD TOO */
+.membership-image-box {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  align-items: center;
+}
+
+/* IMAGE */
+.membership-image-box img {
+  width: 100%;
+  border-radius: 12px;
+}
+
+/* 📱 MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+  .membership-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+  }
+
+  .membership-box,
+  .membership-image-box {
+    max-width: 95%;
+  }
+}
+
+/* court h2 */
+.courts h2 {
+  text-align: center;
+  margin-bottom: 3rem;   
+  font-size: 2rem;    
+  color: #ffc587;        
+}
+
+/* Grid Layout */
+.grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+.card {
+  background: #e8e4e4;
+  padding: 15px;
+  border-radius: 30px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+  height: 100%;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 0px 35px rgba(0, 0, 0, 1.5);
+  background-color: #08054C;
+  color: white;
+}
+.card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+
+  .nav-links {
+    position: fixed;
+    top: 60px;
+    right: -220px;
+    background: rgba(8, 5, 76, 0.55); /* glassy */
+    backdrop-filter: blur(10px);       /* blur behind links */
+    flex-direction: column;
+    width: 200px;
+    height: 100vh;
+    padding: 20px;
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+    border-left: 1px solid rgba(255,255,255,0.15);
+  }
+
+  .nav-links li {
+    margin: 20px 0;
+  }
+
+  .nav-links a {
+    font-size: 1.2rem;
+    padding: 10px;
+  }
+
+  .nav-links.active {
+    right: 0;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+  .hero p {
+    font-size: 1rem;
+  }
+}
+
+/* Card Button */
+.card-btn {
+  background: linear-gradient(to bottom, #1e3c72, #8e44ad);
+  padding: 12px 24px;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 10px;
+  transition: transform 0.3s ease, box-shadow 0.4s ease;
+  display: inline-block;
+  margin-top: auto;
+  margin-left: auto;
+  margin-right: auto;
+  width: 40%;
+}
+.card-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* === FINAL ALIGNMENT FIX === */
+.grid {
+  align-items: stretch;/* equal height for each column */
+}
+.card {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  text-align: center;
+  height: 100% !important;
+}
+.card p {
+  flex-grow: 1;
+  margin-bottom: 10px;
+}
+.card-btn {
+  align-self: center;
+  margin-top: auto;
+}
+
+
+
+/* =============================
+      BRAND NEW FOOTER
+=============================*/
+.new-footer {
+  width: 100%;
+  background: linear-gradient(
+    to top,
+    #08054C 80%,
+    rgba(8, 5, 76, 0.9) 95%,
+    rgba(8, 5, 76, 0) 100%
+  );
+  color: white;
+  padding: 60px 40px 20px;
+  font-family: "Alata", sans-serif;
+}
+
+
+.footer-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+/* Left Column */
+.footer-col.left h3 {
+  font-size: 1.4rem;
+  margin-bottom: 15px;
+}
+
+.footer-col.left h3.sub {
+  margin-top: 20px;
+}
+
+.footer-item {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.footer-item i {
+  font-size: 1.2rem;
+  color: gold;
+  margin-top: 3px;
+}
+
+.footer-desc span {
+  color: gold;
+  font-weight: bold;
+}
+
+.footer-social i {
+  font-size: 2rem;
+  color: white;
+  margin: 10px 0 15px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.footer-social i:hover {
+  color: gold;
+}
+
+/* Right Column (MAP) */
+.footer-col.right iframe {
+  width: 100%;
+  height: 400px;
+  border: 0;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Bottom Bar */
+.footer-bottom {
+  margin-top: 40px;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  padding-top: 20px;
+}
+
+.footer-bottom a {
+  color: white;
+  text-decoration: none;
+  margin: 0 6px;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+.footer-bottom a:hover {
+  color: gold;
+}
+
+.footer-logo img {
+  margin-top: 15px;
+  height: 60px;
+}
+
+
+/* =============================
+      RESPONSIVE FOOTER
+=============================*/
+@media (max-width: 768px) {
+  .footer-wrapper {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .footer-item {
+    justify-content: center;
+  }
+
+  .footer-col.right iframe {
+    margin-top: 20px;
+  }
+}
+
+
+/* FAQ Section Styling */
+.faq-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.faq-title {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.faq-title-kate {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.faq-item {
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.faq-question {
+  background: linear-gradient(to right, #007BFF, rgba(8, 5, 76, 0.9), rgba(190, 55, 197, 0.9));
+  color: white;
+  padding: 10px;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: all 0.4s ease-in-out;
+}
+
+.faq-question:hover {
+  background: linear-gradient(to right, #5fadff, rgba(25, 16, 195, 0.9), rgba(245, 60, 255, 0.9));
+  color: white;
+  padding: 10px;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease;
+  padding: 0;
+  margin: 0;
+  border-left: 3px solid #007BFF;
+  background: #f9f9f9;
+}
+
+.faq-answer.open {
+  max-height: 200px; /* adjust if answers are longer */
+  padding: 10px;
+}
+
+
+body.faqs-page {
+  font-family: 'Alata';
+  background: url("images/wave-bg.jpg") no-repeat center bottom;
+  background-size: cover;
+  background-attachment: fixed; /* makes it stay in place */
+}
+
+footer {
+  background: linear-gradient(to top, #08054C, rgba(8, 5, 76, 0.9), rgba(8, 5, 76, 0));
+  padding: 20px;
+}
+
+.footer-container {
+  max-width: 800px;
+  margin: auto;
+  margin-top: 5rem;
+  text-align: center;
+}
+
+.footer-container h3 {
+  margin-bottom: 30px;
+  font-size: 1.3rem;
+}
+
+.footer-container p {
+  margin: 8px 0;
+  color: black;
+}
+
+.footer-container a {
+  margin-right: 8px;
+  color: gold;
+}
+
+
+/* Kate Kate's CSS */
+
+:root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --accent: #e74c3c;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --payment: #9b59b6;
+
+            /*  */
+
+            --darkBlue: #08054C ;
+            --navyBlue: #130CB2;
+            --darkGrey: #676767;
+            --lightGrey: #BDBDBD;
+            --lightViolet: #928AFF;
+            --lightPurple: #B36AE5;
+            --lightGreen: #89BD92;    
+        }
+/* About Developers */
+.faq-container-kate {
+  max-width: 50rem;
+  margin: 40px auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.introduction-body section,
+.introduction-container,
+.introduction-card {
+  text-align: initial;
+}
+.introduction-container{
+}
+
+
+.introduction-body {
+}
+
+.introduction-wrapper{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+.introduction-card {
+    margin-left: auto;
+    margin-right: 3rem; /* gap between cards */
+    
+    border-radius: 45%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0.0, 0.2);
+
+    display: grid;
+    justify-content: space-between;
+    align-items: start;
+    align-content: start; 
+
+    height: 36rem;
+    width: 22rem;
+    box-sizing: border-box;
+
+    background-color: rgb(243, 243, 243, 0.9);
+    border: 4px solid white;
+
+    background-image: 
+        /* Define a solid blue block using a linear gradient */
+        linear-gradient(to bottom, var(--primary) 0%, var(--lightPurple) 100%); 
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center -440px;
+}
+
+.intro-texts > h1{
+    font-size: 1.50rem;
+}
+
+.intro-texts > h3{
+    font-style: italic;
+    font-size: 1.25rem;
+    line-height: 1rem;
+    margin-bottom: 1rem;
+    opacity: 50%;
+    font-weight: normal;
+}
+
+.intro-texts h3::after,
+.faq-container h2::after,
+.faq-title-kate::after {
+    content: ""; 
+    display: block;
+
+    height: 10px; /* Adjust this for the height of your zigzag */
+    width: 100%;
+    margin-top: 10px; /* Adjust spacing below h3 */
+    margin-bottom: 20px; /* Adjust spacing above p */
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10'%3E%3Cpath fill='none' stroke='%23333333' stroke-width='3' d='M0,5 L10,0 L30,10 L50,0 L70,10 L90,0 L100,5' /%3E%3C/svg%3E");
+    
+    background-repeat: repeat-x;
+    background-size: 60px 10px; /* Adjust horizontal length and vertical height of one zigzag section */
+
+    background-position: center bottom;
+    opacity: 40%;
+}
+
+.intro-texts{
+    font-size: 2vh;
+    padding-left: 3.5rem;
+    padding-right: 3.5rem;
+    width: 100%;
+    align-self: start; 
+}
+
+.flickity-slider {
+  transition: transform 0.05s ease-in-out !important; /* lightning quick */
+}
+
+
+.intro-image > img {
+    width: 100%;
+    height: 100%;
+    flex: 0 0 40%;                /* natural width */
+    height: 100%;               /* fill height of the card */
+    object-fit: cover;  
+    overflow: hidden;
+    border-radius: 100px;
+    border: 5px solid lightgrey;
+}
+
+.intro-image {
+  height: 10rem;
+  width: 10rem;
+  border-radius: 100px;
+
+  overflow: hidden;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 3rem;
+}
+
+/* DEFAULT STYLES HERE (for desktop/large screens) */
+
+/* ... all your current .introduction-card and .intro-texts CSS ... */
+
+
+/* =================================================
+   MOBILE STYLES START HERE
+   =================================================
+*/
+
+@media (max-width: 768px) {
+  .flickity-viewport {
+    overflow: hidden !important;
+  }
+    
+    /* 1. Stack the image and text */
+    .introduction-card {
+        /* Change from side-by-side grid to stacking rows */
+        grid-template-columns: 1fr; 
+        border-radius: 45%;
+        height: 45rem;
+        width: 100%; 
+        background-image: url("images/flipped-wave-2x-cropped.png");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center -590px;
+    }
+    
+    /* 2. Adjust the Image */
+    .intro-image {
+        /* Ensure the image container takes the full width */
+        width: 10rem;
+        /* You might want to cap the height so the image isn't huge */
+        height: 10rem; 
+    }
+    
+    /* 3. Adjust Text/Typography */
+    .intro-texts {
+        /* Reduce padding for tighter mobile layout */
+        padding: 5rem 2.5rem; 
+        /* Reduce the font size for the main heading */
+        font-size: 1.2rem; 
+    }
+    
+    .intro-texts > h1 {
+        /* Make the heading smaller */
+        font-size: 1.4rem; 
+    }
+    
+    /* 4. Adjust the Zigzag Separator */
+    .intro-texts h3::after {
+        /* Adjust margins if needed due to reduced padding */
+        margin-top: 5px; 
+        margin-bottom: 10px;
+    }
+}
+
+
+
+.abt-developer-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.abt-developer-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; 
+    gap: 2rem 1.50rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.0);
+}
+
+.abt-developer-container::after {
+    content: ""; 
+    display: block;
+
+    opacity: 30%;
+    height: 10px; /* Adjust this for the height of your zigzag */
+    width: 90%;
+    margin-top: 10px; /* Adjust spacing below h3 */
+    margin-bottom: 20px; /* Adjust spacing above p */
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10'%3E%3Cpath fill='none' stroke='%23333333' stroke-width='3' d='M0,5 L10,0 L30,10 L50,0 L70,10 L90,0 L100,5' /%3E%3C/svg%3E");
+    
+    background-repeat: repeat-x;
+    background-size: 60px 10px; /* Adjust horizontal length and vertical height of one zigzag section */
+
+    background-position: center bottom;
+}
+
+.developer-card {
+    border: 5px solid lightgrey;
+    border-radius: 100px;
+    height: 7rem;
+    width: 7rem;
+    overflow: hidden;
+    background-color: var(--payment);
+}
+
+.developer-card > img {
+    width: 100%;
+    height: 100%;
+}
+
+.developer-card-bg {
+  background-color: red;
+}
+
+/* text overlay */
+.developer-card-texts {   
+    text-align: center;
+    padding-top: 1rem;
+    font-size: 0.7rem;
+    color: var(--dark);
+    line-height: 15px;
+}
+
+.developer-card-texts p{
+    opacity: 80%;
+    font-size: 0.9rem;
+}
+
+.developer-card-texts h2{
+    font-size: 1.50rem;
+}
+
+.developer-card-wrapper{
+  display: grid;
+  place-items: center;
+  width: 8rem;
+  gap: 0.5rem;
+}
+
+.developer-card-wrapper-bg {
+  /*
+  background-color: rgba(173, 173, 173, 0.3);
+  border: 3px solid rgba(255, 255, 255, 0.4);
+
+  width: rem;
+  height: 18rem;
+  padding-top: 1rem;
+  border-bottom-left-radius: 15rem;
+  border-bottom-right-radius: 15rem; */
+}
+
+
+/* hover reveals */
+.developer-card:hover::after,
+.developer-card:hover .developer-card-texts {
+  opacity: 1;
+}
+
+/* ===== TERMS PAGE STYLING ===== */
+body.terms-page {
+  font-family: 'Alata';
+  background: url("images/wave-bg-2x.png") no-repeat center bottom;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.terms-container {
+  background: rgba(255, 255, 255, 0.9);
+  margin-top: 100px;
+  margin-bottom: 60px;
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  padding: 40px;
+  max-width: 800px;
+  text-align: justify;
+}
+
+.terms-container h1 {
+  font-size: 2.2rem;
+  color: #08054C;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.terms-container p {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #333;
+}
+
+.terms-container a {
+  color: #007BFF;
+  text-decoration: none;
+}
+
+.terms-container a:hover {
+  text-decoration: underline;
+}
+
+
+/* ====== PRIVACY PAGE ====== */
+
+body.privacy-page {
+  font-family: 'Alata';
+  background: url("images/wave-bg.jpg") no-repeat center bottom;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.privacy-page {
+  font-family: "Alata", sans-serif;
+  color: #333;
+  background: url("images/wave-bg-2x.png") no-repeat center bottom;
+  background-size: cover;
+  background-attachment: fixed;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Privacy container box */
+.privacy-container {
+  margin: 130px auto 100px;
+  width: 90%;
+  max-width: 900px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 40px 50px;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: justify;
+}
+
+.privacy-container h2 {
+  text-align: center;
+  color: #08054C;
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+.privacy-container p a {
+  color: #007BFF;
+  text-decoration: none;
+}
+
+.privacy-container p a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .privacy-container {
+    padding: 30px 25px;
+  }
+}
+ 
+/*===Terms and Conditions===*/
+body.terms-page {
+  font-family: 'Alata';
+  background: url("images/wave-bg.jpg") no-repeat center bottom;
+  background-size: cover;
+  background-attachment: fixed;
+}
+

@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard - Sports Court Booking System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="greatlifedesign.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Employee Dashboard</h1>
+            <p>Manage bookings and court reservations</p>
+        </header>
+        
+        <div class="dashboard">
+            <div class="sidebar">
+                <div class="logo">
+                    <h2><i class="fas fa-dumbbell"></i> CourtMaster</h2>
+                </div>
+                
+                <ul class="menu">
+                    <li><a href="#" class="active" data-section="overview"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="#" data-section="reservations"><i class="fas fa-calendar-alt"></i> Reservations</a></li>
+                    <li><a href="#" data-section="customers"><i class="fas fa-users"></i> Customers</a></li>
+                </ul>
+            </div>
+            
+            <div class="dashboard-content">
+                <div class="dashboard-header">
+                    <h2 id="sectionTitle">Reservation Dashboard</h2>
+                    <div class="user-info">
+                        <img src="https://ui-avatars.com/api/?name=Employee+Name&background=3498db&color=fff" alt="User" width="40" height="40" style="border-radius: 50%;">
+                        <div>
+                            <h4>Peter Johnwyn A. Quirimit</h4>
+                            <p>Administrator</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Overview Section -->
+                <div id="overview-section" class="dashboard-section">
+                    <div class="dashboard-cards" id="statsCards">
+                        <!-- Stats will be loaded from Firebase -->
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                        <div style="background: white; border-radius: 10px; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);">
+                            <h3>Recent Bookings</h3>
+                            <div id="recentBookings"></div>
+                        </div>
+                        
+                        <div style="background: white; border-radius: 10px; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);">
+                            <h3>Pending Approvals</h3>
+                            <div id="pendingApprovals"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reservations Section -->
+                <div id="reservations-section" class="dashboard-section" style="display: none;">
+                    <div class="filters">
+                        <div class="filter-group">
+                            <i class="fas fa-calendar"></i>
+                            <input type="date" id="date-filter">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <i class="fas fa-filter"></i>
+                            <select id="sport-filter">
+                                <option value="">All Sports</option>
+                                <option value="basketball">Basketball</option>
+                                <option value="volleyball">Volleyball</option>
+                                <option value="table-tennis">Table Tennis</option>
+                                <option value="badminton">Badminton</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <i class="fas fa-info-circle"></i>
+                            <select id="status-filter">
+                                <option value="">All Statuses</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="pending">Pending</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Search customer..." id="search-input">
+                        </div>
+                    </div>
+                    
+                    <div class="reservations-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Sport</th>
+                                    <th>Date & Time</th>
+                                    <th>People</th>
+                                    <th>Contact</th>
+                                    <th>Payment</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reservationsTableBody">
+                                <!-- Reservations will be loaded from Firebase -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Customers Section -->
+                <div id="customers-section" class="dashboard-section" style="display: none;">
+                    <div style="background: white; border-radius: 10px; padding: 1.5rem; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);">
+                        <h3>Customer Management</h3>
+                        <p>Customer management features coming soon...</p>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        <!-- Booking Details Modal -->
+        <div id="bookingModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 10px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3>Booking Details</h3>
+                    <button id="closeModal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                </div>
+                <div id="modalContent"></div>
+                <div id="modalActions" style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;"></div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000;">
+            <div style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;"></div>
+        </div>
+        
+        <footer>
+            <p>Sports Court Booking System - Employee Dashboard</p>
+        </footer>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyClYCgNysqj_yWATZrskYzYWGqYL3jhtVU",
+            authDomain: "greatlifereservation.firebaseapp.com",
+            projectId: "greatlifereservation",
+            storageBucket: "greatlifereservation.firebasestorage.app",
+            messagingSenderId: "548367545885",
+            appId: "1:548367545885:web:c4462df23e88151faf78f4",
+            measurementId: "G-XSCQSP58CV"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let currentBookings = [];
+
+        // Show loading spinner
+        function showLoading() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }
+
+        // Hide loading spinner
+        function hideLoading() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                background: ${type === 'success' ? '#27ae60' : '#e74c3c'};
+                color: white;
+                border-radius: 5px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 3000;
+                font-weight: 500;
+                max-width: 300px;
+                word-wrap: break-word;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Navigation functionality
+            const menuItems = document.querySelectorAll('.menu a[data-section]');
+            const sections = document.querySelectorAll('.dashboard-section');
+            const sectionTitle = document.getElementById('sectionTitle');
+            
+            menuItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetSection = this.dataset.section;
+                    
+                    // Update active menu item
+                    menuItems.forEach(mi => mi.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show target section
+                    sections.forEach(section => section.style.display = 'none');
+                    document.getElementById(`${targetSection}-section`).style.display = 'block';
+                    
+                    // Update title
+                    const titles = {
+                        'overview': 'Reservation Dashboard',
+                        'reservations': 'Manage Reservations',
+                        'customers': 'Customer Management'
+                    };
+                    sectionTitle.textContent = titles[targetSection] || 'Dashboard';
+                    
+                    // Load section-specific data
+                    if (targetSection === 'overview') {
+                        loadDashboardData();
+                    } else if (targetSection === 'reservations') {
+                        loadReservationsData();
+                    }
+                });
+            });
+            
+            // Load initial data
+            loadDashboardData();
+            
+            // Modal functionality
+            const modal = document.getElementById('bookingModal');
+            const closeModal = document.getElementById('closeModal');
+            
+            closeModal.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+            
+            window.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // Filter functionality
+            const sportFilter = document.getElementById('sport-filter');
+            const statusFilter = document.getElementById('status-filter');
+            const searchInput = document.getElementById('search-input');
+            const dateFilter = document.getElementById('date-filter');
+            
+            [sportFilter, statusFilter, searchInput, dateFilter].forEach(element => {
+                if (element) {
+                    element.addEventListener('change', filterReservations);
+                    element.addEventListener('input', filterReservations);
+                }
+            });
+
+            // Add CSS for loading spinner animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+        
+        // Load dashboard overview data
+        async function loadDashboardData() {
+            showLoading();
+            try {
+                const snapshot = await db.collection('bookings').get();
+                const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                currentBookings = bookings;
+                
+                // Calculate stats
+                const stats = {
+                    basketball: bookings.filter(b => b.sport === 'basketball').length,
+                    volleyball: bookings.filter(b => b.sport === 'volleyball').length,
+                    'table-tennis': bookings.filter(b => b.sport === 'table-tennis').length,
+                    badminton: bookings.filter(b => b.sport === 'badminton').length
+                };
+                
+                // Update stats cards
+                const statsCards = document.getElementById('statsCards');
+                statsCards.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-icon basketball-bg">
+                            <i class="fas fa-basketball-ball"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>${stats.basketball}</h3>
+                            <p>Basketball Reservations</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon volleyball-bg">
+                            <i class="fas fa-volleyball-ball"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>${stats.volleyball}</h3>
+                            <p>Volleyball Reservations</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon table-tennis-bg">
+                            <i class="fas fa-table-tennis"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>${stats['table-tennis']}</h3>
+                            <p>Table Tennis Reservations</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon badminton-bg">
+                            <i class="fas fa-shuttlecock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>${stats.badminton}</h3>
+                            <p>Badminton Reservations</p>
+                        </div>
+                    </div>
+                `;
+                
+                // Load recent bookings
+                loadRecentBookings(bookings);
+                
+                // Load pending approvals
+                loadPendingApprovals(bookings);
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showToast('Error loading dashboard data', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Load recent bookings
+        function loadRecentBookings(bookings) {
+            const recent = bookings
+                .sort((a, b) => {
+                    const timeA = a.createdAt?.seconds || 0;
+                    const timeB = b.createdAt?.seconds || 0;
+                    return timeB - timeA;
+                })
+                .slice(0, 5);
+            
+            const container = document.getElementById('recentBookings');
+            container.innerHTML = recent.length === 0 ? 
+                '<p>No recent bookings</p>' :
+                recent.map(booking => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #eee;">
+                        <div>
+                            <strong>${booking.name}</strong><br>
+                            <small>${booking.sportName} - ${booking.date}</small>
+                        </div>
+                        <span class="status ${booking.status}">${booking.status}</span>
+                    </div>
+                `).join('');
+        }
+        
+        // Load pending approvals
+        function loadPendingApprovals(bookings) {
+            const pending = bookings.filter(b => b.status === 'pending');
+            
+            const container = document.getElementById('pendingApprovals');
+            container.innerHTML = pending.length === 0 ? 
+                '<p>No pending approvals</p>' :
+                pending.map(booking => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #eee;">
+                        <div>
+                            <strong>${booking.name}</strong><br>
+                            <small>${booking.sportName} - ${booking.date} ${booking.time}</small><br>
+                            <small>₱${booking.amount} - ${booking.paymentMethod}</small>
+                        </div>
+                        <div>
+                            <button onclick="approveBooking('${booking.id}')" style="background: #27ae60; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 3px; margin-right: 0.5rem; cursor: pointer;">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button onclick="rejectBooking('${booking.id}')" style="background: #e74c3c; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 3px; cursor: pointer;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+        }
+        
+        // Load reservations data for the reservations tab
+        async function loadReservationsData() {
+            showLoading();
+            try {
+                const snapshot = await db.collection('bookings').get();
+                const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                currentBookings = bookings;
+                loadReservationsTable(bookings);
+            } catch (error) {
+                console.error('Error loading reservations data:', error);
+                showToast('Error loading reservations data', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Load reservations table
+        function loadReservationsTable(bookings) {
+            const tableBody = document.getElementById('reservationsTableBody');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            bookings.forEach(booking => {
+                const row = document.createElement('tr');
+                const bookingDate = new Date(booking.date + 'T' + booking.time);
+                const formattedDateTime = bookingDate.toLocaleDateString() + ' - ' + booking.time;
+                
+                row.innerHTML = `
+                    <td>${booking.name}</td>
+                    <td>${booking.sportName}</td>
+                    <td>${formattedDateTime}</td>
+                    <td>${booking.people}</td>
+                    <td>
+                        ${booking.phone}<br>
+                        <small>${booking.email}</small>
+                    </td>
+                    <td>
+                        ${booking.paymentMethod}<br>
+                        <small class="status ${booking.paymentStatus || 'pending'}">${booking.paymentStatus || 'pending'}</small>
+                    </td>
+                    <td>₱${booking.amount}</td>
+                    <td><span class="status ${booking.status}">${booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}</span></td>
+                    <td>
+                        <button class="action-btn view" title="View Details" onclick="viewBooking('${booking.id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        ${booking.status === 'pending' ? `
+                            <button class="action-btn" title="Approve" onclick="approveBooking('${booking.id}')" style="color: #27ae60;">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="action-btn" title="Reject" onclick="rejectBooking('${booking.id}')" style="color: #e74c3c;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : `
+                            <button class="action-btn edit" title="Edit" onclick="editBooking('${booking.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${booking.status !== 'cancelled' ? `
+                                <button class="action-btn delete" title="Cancel" onclick="cancelBooking('${booking.id}')">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            ` : ''}
+                        `}
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Action functions
+        window.viewBooking = function(id) {
+            const booking = currentBookings.find(b => b.id === id);
+            if (!booking) return;
+            
+            const modal = document.getElementById('bookingModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            const createdDate = booking.createdAt ? 
+                new Date(booking.createdAt.seconds * 1000).toLocaleString() : 
+                'Unknown';
+            
+            modalContent.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <h4>Customer Information</h4>
+                        <p><strong>Name:</strong> ${booking.name}</p>
+                        <p><strong>Email:</strong> ${booking.email}</p>
+                        <p><strong>Phone:</strong> ${booking.phone}</p>
+                        <p><strong>Party Size:</strong> ${booking.people} people</p>
+                    </div>
+                    <div>
+                        <h4>Booking Details</h4>
+                        <p><strong>Sport:</strong> ${booking.sportName}</p>
+                        <p><strong>Date:</strong> ${booking.date}</p>
+                        <p><strong>Time:</strong> ${booking.time}</p>
+                        <p><strong>Status:</strong> <span class="status ${booking.status}">${booking.status}</span></p>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <h4>Payment Information</h4>
+                    <p><strong>Method:</strong> ${booking.paymentMethod}</p>
+                    <p><strong>Amount:</strong> ₱${booking.amount}</p>
+                    <p><strong>Payment Status:</strong> <span class="status ${booking.paymentStatus || 'pending'}">${booking.paymentStatus || 'pending'}</span></p>
+                    ${booking.paymentId ? `<p><strong>Payment ID:</strong> ${booking.paymentId}</p>` : ''}
+                    <p><strong>Booking Created:</strong> ${createdDate}</p>
+                    ${booking.approvedAt ? `<p><strong>Approved:</strong> ${new Date(booking.approvedAt.seconds * 1000).toLocaleString()}</p>` : ''}
+                    ${booking.rejectedAt ? `<p><strong>Rejected:</strong> ${new Date(booking.rejectedAt.seconds * 1000).toLocaleString()}</p>` : ''}
+                    ${booking.rejectionReason ? `<p><strong>Rejection Reason:</strong> ${booking.rejectionReason}</p>` : ''}
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        };
+        
+        window.approveBooking = async function(id) {
+            if (!confirm('Are you sure you want to approve this booking?')) return;
+            
+            showLoading();
+            try {
+                await db.collection('bookings').doc(id).update({
+                    status: 'confirmed',
+                    paymentStatus: 'paid',
+                    approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    approvedBy: 'Peter Johnwyn A. Quirimit',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('Booking approved successfully!');
+                
+                // Refresh the current view
+                if (document.getElementById('overview-section').style.display !== 'none') {
+                    await loadDashboardData();
+                } else {
+                    await loadReservationsData();
+                }
+                
+            } catch (error) {
+                console.error('Error approving booking:', error);
+                showToast('Error approving booking. Please try again.', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+        
+        window.rejectBooking = async function(id) {
+            const reason = prompt('Please provide a reason for rejection (optional):');
+            if (reason === null) return; // User cancelled
+            
+            showLoading();
+            try {
+                await db.collection('bookings').doc(id).update({
+                    status: 'cancelled',
+                    rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    rejectedBy: 'Peter Johnwyn A. Quirimit',
+                    rejectionReason: reason || 'No reason provided',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('Booking rejected successfully!');
+                
+                // Refresh the current view
+                if (document.getElementById('overview-section').style.display !== 'none') {
+                    await loadDashboardData();
+                } else {
+                    await loadReservationsData();
+                }
+                
+            } catch (error) {
+                console.error('Error rejecting booking:', error);
+                showToast('Error rejecting booking. Please try again.', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+        
+        window.editBooking = function(id) {
+            const booking = currentBookings.find(b => b.id === id);
+            if (!booking) return;
+            
+            const modal = document.getElementById('bookingModal');
+            const modalContent = document.getElementById('modalContent');
+            const modalActions = document.getElementById('modalActions');
+            
+            modalContent.innerHTML = `
+                <h4>Edit Booking</h4>
+                <div class="form-group">
+                    <label>Customer Name</label>
+                    <input type="text" id="editName" value="${booking.name}">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="editEmail" value="${booking.email}">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="editPhone" value="${booking.phone}">
+                </div>
+                <div class="form-group">
+                    <label>Number of People</label>
+                    <input type="number" id="editPeople" value="${booking.people}" min="1" max="15">
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="editDate" value="${booking.date}">
+                </div>
+                <div class="form-group">
+                    <label>Time</label>
+                    <input type="time" id="editTime" value="${booking.time}">
+                </div>
+            `;
+            
+            modalActions.innerHTML = `
+                <button onclick="saveBookingChanges('${id}')" style="background: #27ae60;">Save Changes</button>
+                <button onclick="document.getElementById('bookingModal').style.display='none'" style="background: #95a5a6;">Cancel</button>
+            `;
+            
+            modal.style.display = 'block';
+        };
+
+        window.saveBookingChanges = async function(id) {
+            showLoading();
+            try {
+                const updates = {
+                    name: document.getElementById('editName').value,
+                    email: document.getElementById('editEmail').value,
+                    phone: document.getElementById('editPhone').value,
+                    people: parseInt(document.getElementById('editPeople').value),
+                    date: document.getElementById('editDate').value,
+                    time: document.getElementById('editTime').value,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                await db.collection('bookings').doc(id).update(updates);
+                
+                document.getElementById('bookingModal').style.display = 'none';
+                showToast('Booking updated successfully!');
+                await loadReservationsData();
+                
+            } catch (error) {
+                console.error('Error updating booking:', error);
+                showToast('Error updating booking', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+        
+        window.cancelBooking = async function(id) {
+            if (!confirm('Are you sure you want to cancel this booking?')) return;
+            
+            showLoading();
+            try {
+                await db.collection('bookings').doc(id).update({
+                    status: 'cancelled',
+                    cancelledAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    cancelledBy: 'Peter Johnwyn A. Quirimit',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('Booking cancelled successfully!');
+                await loadReservationsData(); // Reload data
+                
+            } catch (error) {
+                console.error('Error cancelling booking:', error);
+                showToast('Error cancelling booking. Please try again.', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+        
+        // Filter functionality
+        async function filterReservations() {
+            try {
+                let filteredBookings = [...currentBookings];
+                
+                // Filter by sport
+                const sportValue = document.getElementById('sport-filter')?.value;
+                if (sportValue) {
+                    filteredBookings = filteredBookings.filter(b => b.sport === sportValue);
+                }
+                
+                // Filter by status
+                const statusValue = document.getElementById('status-filter')?.value;
+                if (statusValue) {
+                    filteredBookings = filteredBookings.filter(b => b.status === statusValue);
+                }
+                
+                // Filter by date
+                const dateValue = document.getElementById('date-filter')?.value;
+                if (dateValue) {
+                    filteredBookings = filteredBookings.filter(b => b.date === dateValue);
+                }
+                
+                // Filter by search term
+                const searchValue = document.getElementById('search-input')?.value.toLowerCase();
+                if (searchValue) {
+                    filteredBookings = filteredBookings.filter(b => 
+                        b.name.toLowerCase().includes(searchValue) ||
+                        b.phone.includes(searchValue) ||
+                        b.email.toLowerCase().includes(searchValue)
+                    );
+                }
+                
+                loadReservationsTable(filteredBookings);
+            } catch (error) {
+                console.error('Error filtering reservations:', error);
+                showToast('Error filtering reservations', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

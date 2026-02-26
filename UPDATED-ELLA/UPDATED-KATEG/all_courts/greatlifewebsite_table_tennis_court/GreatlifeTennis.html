@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Court Booking System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+<link rel="stylesheet" href="../all_courts_css/greatlifedesign.css">
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+     <!--- Alata font --->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alata&display=swap" rel="stylesheet">
+    <!-- Monsterrat font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alata&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="logo">
+      <a href="#hero">
+        <img src="logoo.png" alt="GreatLife Fitness Logo">
+      </a>
+    </div>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../index.html#about">About</a></li>
+      <li><a href="../index.html#courts">Courts</a></li>
+      <li><a href="../index.html#classes">Classes</a></li>
+      <li><a href="../index.html#why">Why Us</a></li>
+      <li><a href="../index.html#membership">Membership</a></li>
+      <li><a href="../index.html#contact" class="highlight">Contact</a></li>
+    </ul>
+    <!-- Animated Hamburger -->
+    <div class="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </nav>
+
+  <!-- Overlay for mobile menu -->
+  <div class="overlay"></div>
+
+
+
+  </header>
+    <div class="tab-content active" id="booking">
+        <div class = "intro-container">
+            <div class="intro  js-animate-on-scroll">
+                <h2>Table Tennis</h2>
+                <p class="sport-info">Multiple tables available</p>
+            </div>
+        <div class="sports-grid js-animate-on-scroll">
+            <div class="carousel-container">
+            <div class="carousel-wrapper" id="wrapper">
+                <div class="slide slide-1" style = "background-image: url('../court_images/ping_pong1.jpg'); "></div>
+                <div class="slide slide-2" style = "background-image: url('../court_images/ping_pong2.jpg'); "></div>
+            </div>
+                <button class="prev" onclick="moveSlide(-1)">&#10094;</button>
+                <button class="next" onclick="moveSlide(1)">&#10095;</button>
+            </div>
+        </div>
+        </div>
+
+        <div class="container">
+             <div class = "bking-x-paymnt">
+
+            <div class="booking-form js-animate-on-scroll slide-left">
+            <div class = "prompts">
+                <h3>Reservation Details</h3>
+            </div>
+                
+                <form id="bookingForm">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" required placeholder="Enter your full name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" required placeholder="Enter your email (Gmail, Yahoo, Outlook, etc.)">
+                        <small class="form-help">Only Gmail, Yahoo, Outlook, and other major providers accepted</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" required placeholder="Enter your 11-digit phone number" maxlength="11" pattern="[0-9]{11}">
+                        <small class="form-help">Must be exactly 11 digits</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="people">Number of People</label>
+                        <input type="number" id="people" min="1" max="15" required placeholder="How many people? (Max 15)">
+                        <small class="form-help">Maximum 15 people allowed</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="time">Preferred Time</label>
+                        <label for="start-time" class="preferred-time-prompts">Choose Your Start Time:</label>
+                        <input type="time" id="start-time" name="start-time" class="text-input-field time-input" required min="08:00" max="22:00" >
+                        <label for="end-time" class="preferred-time-prompts">Choose Your End Time:</label>
+                        <input type="time" id="end-time" name="end-time" class="text-input-field time-input" required min="08:00" max="22:00">
+                        <small class="form-help">Operating hours: 8:00 AM - 10:00 PM. Maximum 4 hours per booking.</small>
+                    </div>
+                    <div class="form-group">
+                    <label for="rentalOption" class = "rentalOpt">Select Rental Option:</label>
+                        <select id="rentalOption" name="rentalOption" onchange="calculateTotal()">
+                            <option value="" disabled selected>Choose a configuration</option>
+                            <option value="500">Court + Middle Lights (₱500/hr)</option>
+                            <option value="700">Court + Full Lights (₱700/hr)</option>
+                            <option value="800">Court + Middle Lights + AC (₱800/hr)</option>
+                            <option value="1000">Court + Full Lights + AC (₱1,000/hr)</option>
+                            </select>
+                    </div>
+                </form>
+            </div>
+
+
+            <div class="date-selection">
+
+                <div class = "right-side-grid  js-animate-on-scroll slide-right">
+
+                <div class="calendar-widget">
+                <div class = "prompts">
+                    <h3>Select Date</h3>
+                    <p>You can only book for today and the next two days</p>
+                </div>
+                    <div class="calendar-header">
+                        <span id="currentMonth"></span>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="calendar-weekdays">
+                            <div>Sun</div>
+                            <div>Mon</div>
+                            <div>Tue</div>
+                            <div>Wed</div>
+                            <div>Thu</div>
+                            <div>Fri</div>
+                            <div>Sat</div>
+                        </div>
+                        <div class="calendar-dates" id="calendarDates"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="payment-section  js-animate-on-scroll slide-right">
+                <h3>Payment Method</h3>
+                <p>Payment will be collected in cash upon arrival at the facility</p>
+                
+                <div class="payment-box">
+                    <i class="fas fa-money-bill-wave" style="font-size: 2rem; color: #27ae60; margin-bottom: 0.5rem;"></i>
+                    <p><strong>Cash Payment Only</strong></p>
+                    <p>Total Amount: P<span id="totalAmount">500</span>.00</p>
+                    <small>Please bring exact change when possible</small>
+                </div>
+            </div>
+            <button type="button" id="book-now-btn" class = "bookNow js-animate-on-scroll">Book Now</button>
+            <div class = "final-step js-animate-on-scroll"><h3><i class="fas fa-check-circle final-step-icon"></i>Final Step: Your complete summary will display below after booking.</h3></div>
+            </div>
+
+        </div>
+            
+
+            </div>
+             <div id="confirmationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 10px; max-width: 500px; width: 90%;">
+                    <h3>Confirm Your Booking</h3>
+                    <p>Please review your booking details:</p>
+                    <div id="modalBookingDetails" style="background: #f8f9fa; padding: 1rem; border-radius: 5px; margin: 1rem 0;"></div>
+                 <div id="agreementContainer" style="margin: 1rem 0;">
+                    <div style="margin-bottom: 0.8rem;">
+                        <input type="checkbox" id="terms-agreement" name="terms-agreement" style="margin-right: 0.5rem;">
+                        <label for="terms-agreement">
+                            I agree to the <a href="https://example.com/terms" target="_blank" style="color: #3498db;">Terms and Conditions</a>
+                        </label>
+                    </div>
+                    <div style="margin-bottom: 0.8rem;">
+                        <input type="checkbox" id="privacy-agreement" name="privacy-agreement" style="margin-right: 0.5rem;">
+                        <label for="privacy-agreement">
+                            I consent to the collection and processing of my personal data in accordance with the 
+                            <a href="https://example.com/privacy" target="_blank" style="color: #3498db;">Data Privacy Act</a>
+                        </label>
+                    </div>
+                </div>
+
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button id="cancelBooking" style="background: #e74c3c; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; cursor: pointer;">Cancel</button>
+                        <button id="confirmBooking" style="background: #27ae60; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 5px; cursor: pointer;">Confirm Booking</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="confirmation" id="confirmation">
+                <h2>Booking Confirmed!</h2>
+                <p class = "small-confirmation-msg">We've sent a confirmation message to your email and phone.</p>
+                <p>Your reservation details:</p>
+                <div id="bookingDetails"></div>
+                <p><strong>Booking Reference: <span id="bookingId"></span></strong></p>
+            </div>
+            <footer>
+                <p>Sports Court Booking System - Powered by Firebase</p>
+            </footer>
+
+        </div>
+
+<script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyClYCgNysqj_yWATZrskYzYWGqYL3jhtVU",
+            authDomain: "greatlifereservation.firebaseapp.com",
+            projectId: "greatlifereservation",
+            storageBucket: "greatlifereservation.firebasestorage.app",
+            messagingSenderId: "548367545885",
+            appId: "1:548367545885:web:c4462df23e88151faf78f4",
+            measurementId: "G-XSCQSP58CV"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        emailjs.init("dEzcFJ4tdUGSsXk6O");
+
+        // Calendar functionality
+        let currentDate = new Date();
+        let selectedDate = null;
+        let selectedSport = null;
+        const availableDates = getAvailableDates();
+        
+        function formatTimeToAMPM(time24) {
+        const [hours, minutes] = time24.split(':');
+        const hour = parseInt(hours, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12;
+        return `${hour12}:${minutes} ${ampm}`;
+    }
+
+        function getAvailableDates() {
+            const dates = [];
+            const today = new Date();
+            for (let i = 0; i < 3; i++) {
+                const date = new Date();
+                date.setDate(today.getDate() + i);
+                dates.push(date.toISOString().split('T')[0]);
+            }
+            return dates;
+        }
+
+        // sport pricing
+        function getSportPrice(sport) {
+            const prices = {
+                'basketball': 800,
+                'volleyball': 700,
+                'table-tennis': 400,
+                'badminton': 600
+            };
+            return prices[sport] || 500;
+        }
+
+        function formatDateDisplay(dateString) {
+            if (!dateString) return 'Invalid Date';
+            
+            const parts = dateString.split('-');
+            if (parts.length !== 3) return 'Invalid Date';
+            
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1; 
+            const day = parseInt(parts[2], 10);
+            
+
+            const date = new Date(year, month, day);
+            
+            if (isNaN(date.getTime())) return 'Invalid Date';
+            
+            return date.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                timeZone: 'Asia/Manila' 
+            });
+        }
+
+
+        function updateEndTimeOptions(startTime) {
+            const endTimeInput = document.getElementById('end-time');
+            const startMinutes = timeToMinutes(startTime);
+            const operatingEnd = timeToMinutes('22:00');
+            
+            if (!startTime) {
+                endTimeInput.min = '08:00';
+                endTimeInput.max = '22:00';
+                endTimeInput.value = '';
+                return;
+            }
+            
+            const minEndMinutes = startMinutes + 60;
+            const minEndHours = Math.floor(minEndMinutes / 60);
+            const minEndMins = minEndMinutes % 60;
+            const minEndTime = `${String(minEndHours).padStart(2, '0')}:${String(minEndMins).padStart(2, '0')}`;
+            
+            const maxEndMinutes = Math.min(startMinutes + 240, operatingEnd);
+            const maxEndHours = Math.floor(maxEndMinutes / 60);
+            const maxEndMins = maxEndMinutes % 60;
+            const maxEndTime = `${String(maxEndHours).padStart(2, '0')}:${String(maxEndMins).padStart(2, '0')}`;
+            
+            endTimeInput.min = minEndTime;
+            endTimeInput.max = maxEndTime;
+            
+            if (endTimeInput.value) {
+                const currentEndMinutes = timeToMinutes(endTimeInput.value);
+                if (currentEndMinutes < minEndMinutes || currentEndMinutes > maxEndMinutes) {
+                    const suggestedEndMinutes = Math.min(startMinutes + 120, maxEndMinutes);
+                    const suggestedHours = Math.floor(suggestedEndMinutes / 60);
+                    const suggestedMins = suggestedEndMinutes % 60;
+                    endTimeInput.value = `${String(suggestedHours).padStart(2, '0')}:${String(suggestedMins).padStart(2, '0')}`;
+                }
+            } else {
+                const suggestedEndMinutes = Math.min(startMinutes + 120, maxEndMinutes);
+                const suggestedHours = Math.floor(suggestedEndMinutes / 60);
+                const suggestedMins = suggestedEndMinutes % 60;
+                endTimeInput.value = `${String(suggestedHours).padStart(2, '0')}:${String(suggestedMins).padStart(2, '0')}`;
+            }
+                const helpText = endTimeInput.nextElementSibling;
+                if (helpText && helpText.classList.contains('form-help')) {
+                    const maxDuration = (maxEndMinutes - startMinutes) / 60;
+                    const minEndTimeAMPM = formatTimeToAMPM(minEndTime);
+                    const maxEndTimeAMPM = formatTimeToAMPM(maxEndTime);
+                    helpText.textContent = `Available booking: ${minEndTimeAMPM} to ${maxEndTimeAMPM} (up to ${maxDuration} hours)`;
+                }
+            }
+        function timeToMinutes(time) {
+            const [hours, minutes] = time.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        async function processBooking(booking) {
+            return {
+                success: true,
+                status: 'pending',
+                requiresManualApproval: true,
+                paymentId: 'CASH_' + Date.now(),
+                message: 'Cash payment will be collected on arrival'
+            };
+        }
+
+        // Email sending function
+        async function sendConfirmationEmail(booking, bookingId) {
+            try {
+                const templateParams = {
+                    to_name: booking.name,
+                    to_email: booking.email,
+                    sport: booking.sportName,
+                    date: booking.formattedDate,
+                    startTime: formatTimeToAMPM(booking.startTime), 
+                    endTime: formatTimeToAMPM(booking.endTime),
+                    people: booking.people,
+                    amount: booking.amount,
+                    booking_id: bookingId,
+                    phone: booking.phone
+                };
+                                
+                await emailjs.send('service_ul5ldh1', 'template_ii6csth', templateParams);
+                console.log('Email sent successfully');
+            } catch (error) {
+                console.error('Email failed:', error);
+            }
+        }
+
+        async function renderCalendar() {
+            const monthNames = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+
+            document.getElementById('currentMonth').textContent = 
+                monthNames[currentDate.getMonth()] + ' ' + currentDate.getFullYear();
+            const bookedDates = await getBookedDates();
+
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+            const calendarDates = document.getElementById('calendarDates');
+            calendarDates.innerHTML = '';
+
+            for (let i = 0; i < 42; i++) {
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                
+                const dateElement = document.createElement('div');
+                dateElement.className = 'calendar-date';
+                dateElement.textContent = date.getDate();
+                
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const dateString = `${year}-${month}-${day}`;
+                
+                if (date.getMonth() !== currentDate.getMonth()) {
+                    dateElement.classList.add('other-month');
+                }
+                
+                // Check if date is booked
+                if (bookedDates.includes(dateString)) {
+                    dateElement.classList.add('booked');
+                } else if (availableDates.includes(dateString)) {
+                    dateElement.classList.add('available');
+                    dateElement.addEventListener('click', () => selectDate(dateString, dateElement));
+                } else {
+                    dateElement.classList.add('unavailable');
+                }
+                
+                if (selectedDate === dateString) {
+                    dateElement.classList.add('selected');
+                }
+                
+                calendarDates.appendChild(dateElement);
+            }
+        }
+
+        async function getBookedDates() {
+            try {
+                const snapshot = await db.collection('bookings')
+                    .where('status', '==', 'confirmed')
+                    .get();
+                
+                return snapshot.docs.map(doc => doc.data().date);
+            } catch (error) {
+                console.error('Error getting booked dates:', error);
+                return [];
+            }
+        }
+
+        function selectDate(dateString, element) {
+            document.querySelectorAll('.calendar-date.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            selectedDate = dateString;
+        }
+
+        function isValidEmail(email) {
+            const validDomains = [
+                'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 
+                'aol.com', 'icloud.com', 'protonmail.com', 'zoho.com',
+                'mail.com', 'yandex.com'
+            ];
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) return false;
+            
+            const domain = email.split('@')[1].toLowerCase();
+            return validDomains.includes(domain);
+        }
+
+        // Phone number check
+        function isValidPhone(phone) {
+            return /^[0-9]{11}$/.test(phone);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            selectedSport = 'table-tennis';
+            const amount = getSportPrice('table-tennis');
+            const totalAmountElement = document.getElementById('totalAmount');
+            if (totalAmountElement) {
+                totalAmountElement.textContent = amount;
+            }
+            renderCalendar();
+            
+            // Email validation
+            document.getElementById('email').addEventListener('blur', function() {
+                if (this.value && !isValidEmail(this.value)) {
+                    this.setCustomValidity('Please use a valid email from Gmail, Yahoo, Outlook, or other major providers');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // Phone validation
+            document.getElementById('phone').addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+                if (this.value.length > 0 && !isValidPhone(this.value)) {
+                    this.setCustomValidity('Phone number must be exactly 11 digits');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // People validation
+            document.getElementById('people').addEventListener('input', function() {
+                const value = parseInt(this.value);
+                if (value > 15) {
+                    this.value = 15;
+                    alert('Maximum 15 people allowed');
+                }
+            });
+
+            
+            
+            // Sport selection with price update
+            const sportCards = document.querySelectorAll('.sport-card');
+            
+            sportCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    sportCards.forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedSport = this.dataset.sport;
+                    
+                    // Update total amount based on selected sport
+                    const amount = getSportPrice(selectedSport);
+                    document.getElementById('totalAmount').textContent = amount;
+                });
+            });
+            
+            const bookNowBtn = document.getElementById('book-now-btn');
+            const confirmationModal = document.getElementById('confirmationModal');
+            const modalBookingDetails = document.getElementById('modalBookingDetails');
+            const cancelBookingBtn = document.getElementById('cancelBooking');
+            const confirmBookingBtn = document.getElementById('confirmBooking');
+            const confirmation = document.getElementById('confirmation');
+            const bookingDetails = document.getElementById('bookingDetails');
+            const bookingIdElement = document.getElementById('bookingId');
+            
+            let pendingBooking = null;
+
+            const startTimeInput = document.getElementById('start-time');
+            const endTimeInput = document.getElementById('end-time');
+
+            // Update end time options when start time changes
+            startTimeInput.addEventListener('change', function() {
+                updateEndTimeOptions(this.value);
+            });
+
+            // Also validate when end time changes
+            endTimeInput.addEventListener('change', function() {
+                const startTime = startTimeInput.value;
+                if (!startTime) {
+                    alert('Please select a start time first');
+                    this.value = '';
+                    return;
+                }
+                
+                const startMinutes = timeToMinutes(startTime);
+                const endMinutes = timeToMinutes(this.value);
+                const duration = endMinutes - startMinutes;
+                
+                if (duration < 60) {
+                    alert('Minimum booking duration is 1 hour');
+                    this.value = '';
+                } else if (duration > 240) {
+                    alert('Maximum booking duration is 4 hours');
+                    this.value = '';
+                }
+            });
+            
+            // Book Now button click handler
+            bookNowBtn.addEventListener('click', function() {
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const phone = document.getElementById('phone').value;
+                const people = document.getElementById('people').value;
+                const startTime = document.getElementById('start-time').value; // Get value from start-time input
+                const endTime = document.getElementById('end-time').value; // Get value from end-time input
+
+                
+                // Validation
+                if (!name || !email || !phone || !people || !startTime || !endTime || !selectedSport || !selectedDate) {
+                    alert('Please fill in all required fields, select a sport, and choose a date!');
+                    return;
+                }
+                    if (!startTime || !endTime) {
+                    alert('Please select both start and end times!');
+                    return;
+                }
+                function timeToMinutes(time) {
+                    const [hours, minutes] = time.split(':').map(Number);
+                    return hours * 60 + minutes;
+                }
+
+                const startMinutes = timeToMinutes(startTime);
+                const endMinutes = timeToMinutes(endTime);
+                const operatingStart = timeToMinutes('08:00');
+                const operatingEnd = timeToMinutes('22:00');
+                if (startMinutes < operatingStart || endMinutes > operatingEnd) {
+                    alert('Booking times must be within operating hours (8:00 AM - 10:00 PM)');
+                    return;
+                }
+
+                // Validate end time is after start time
+                if (endMinutes <= startMinutes) {
+                    alert('End time must be after start time');
+                    return;
+                }
+
+                // Validate maximum duration (4 hours = 240 minutes)
+                const duration = endMinutes - startMinutes;
+                if (duration > 240) {
+                    alert('Maximum booking duration is 4 hours');
+                    return;
+                }
+
+                // Validate minimum duration (1 hour = 60 minutes)
+                if (duration < 60) {
+                    alert('Minimum booking duration is 1 hour');
+                    return;
+                }
+                if (!isValidEmail(email)) {
+                    alert('Please enter a valid email from Gmail, Yahoo, Outlook, or other major providers');
+                    return;
+                }
+                
+                if (!isValidPhone(phone)) {
+                    alert('Please enter a valid 11-digit phone number');
+                    return;
+                }
+                
+                if (parseInt(people) > 15) {
+                    alert('Maximum 15 people allowed');
+                    return;
+                }
+                
+                // Prepare booking data - use the fixed date formatting function
+                const formattedDate = formatDateDisplay(selectedDate);
+                
+                const sportName = {
+                    'basketball': 'Basketball Court',
+                    'volleyball': 'Volleyball Court',
+                    'table-tennis': 'Table Tennis',
+                    'badminton': 'Badminton Court'
+                }[selectedSport];
+                
+                const paymentMethod = "Cash Payment";
+                const amount = getSportPrice(selectedSport);
+                
+                pendingBooking = {
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    people: parseInt(people),
+                    sport: selectedSport,
+                    sportName: sportName,
+                    date: selectedDate,
+                    startTime: startTime,
+                    endTime: endTime,
+                    time: `${startTime} - ${endTime}`,
+                    paymentMethod: paymentMethod,
+                    amount: amount,
+                    formattedDate: formattedDate
+                };
+                                
+                // Show details in modal
+                modalBookingDetails.innerHTML = `
+                    <p><strong>Sport:</strong> ${sportName}</p>
+                    <p><strong>Date:</strong> ${formattedDate}</p>
+                    <p><strong>Time:</strong> ${formatTimeToAMPM(startTime)} to ${formatTimeToAMPM(endTime)}</p>
+                    <p><strong>Name:</strong> ${name}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>Party Size:</strong> ${people} people</p>
+                    <p><strong>Phone:</strong> ${phone}</p>
+                    <p><strong>Payment Method:</strong> ${paymentMethod}</p>
+                    <p><strong>Total Amount:</strong> P${amount}.00</p>
+                `;
+                
+                confirmationModal.style.display = 'block';
+            });
+            
+            // Cancel booking
+            cancelBookingBtn.addEventListener('click', function() {
+                confirmationModal.style.display = 'none';
+                pendingBooking = null;
+            });
+            
+            // Confirm and process booking
+            confirmBookingBtn.addEventListener('click', async function() {
+                if (!pendingBooking) return;
+
+                const termsChecked = document.getElementById('terms-agreement').checked;
+                const privacyChecked = document.getElementById('privacy-agreement').checked;
+
+                 if (!termsChecked || !privacyChecked) {
+                    alert('Please accept both the Terms and Conditions and the Data Privacy Policy to proceed.');
+                    return;
+                }
+    
+                
+                confirmBookingBtn.disabled = true;
+                confirmBookingBtn.textContent = 'Processing...';
+                
+                try {
+                    // Process payment first
+                    const paymentResult = await processBooking(pendingBooking);
+                    
+                    if (!paymentResult.success) {
+                        alert('Booking failed: ' + paymentResult.message);
+                        return;
+                    }
+                    
+                    // Create booking object with payment info
+                    const booking = {
+                        ...pendingBooking,
+                        status: paymentResult.requiresManualApproval ? 'pending' : 'confirmed',
+                        paymentStatus: paymentResult.status,
+                        paymentId: paymentResult.paymentId,
+                        termsAccepted: true,
+                        privacyAccepted: true,
+                        acceptedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+
+                    
+                    // Remove UI-only fields
+                    delete booking.formattedDate;
+                    
+                    // Add booking to Firebase
+                    const docRef = await db.collection('bookings').add(booking);
+                    
+                    // Send confirmation email
+                    await sendConfirmationEmail(pendingBooking, docRef.id);
+                    
+                    // Hide modal
+                    confirmationModal.style.display = 'none';
+                    
+                    // Display success confirmation
+                    bookingDetails.innerHTML = `
+                        <p><strong>Sport:</strong> ${pendingBooking.sportName}</p>
+                        <p><strong>Date:</strong> ${pendingBooking.formattedDate}</p>
+                        <p><strong>Time:</strong> ${pendingBooking.startTime} to ${pendingBooking.endTime}</p>
+                        <p><strong>Name:</strong> ${pendingBooking.name}</p>
+                        <p><strong>Email:</strong> ${pendingBooking.email}</p>
+                        <p><strong>Party Size:</strong> ${pendingBooking.people} people</p>
+                        <p><strong>Phone:</strong> ${pendingBooking.phone}</p>
+                        <p><strong>Payment Method:</strong> ${pendingBooking.paymentMethod}</p>
+                        <p><strong>Amount:</strong> P${pendingBooking.amount}.00</p>
+                        <p><strong>Status:</strong> ${booking.status === 'confirmed' ? 'Confirmed' : 'Pending Approval'}</p>
+                    `;
+                    
+                    bookingIdElement.textContent = docRef.id;
+                    confirmation.style.display = 'block';
+                    confirmation.scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Reset form
+                    document.getElementById('bookingForm').reset();
+                    sportCards.forEach(c => c.classList.remove('selected'));
+                    selectedSport = null;
+                    selectedDate = null;
+                    document.getElementById('totalAmount').textContent = '500';
+                    renderCalendar();
+                    pendingBooking = null;
+                    
+                } catch (error) {
+                    console.error('Error adding booking:', error);
+                    alert('Error creating booking. Please try again.');
+                } finally {
+                    confirmBookingBtn.disabled = false;
+                    confirmBookingBtn.textContent = 'Confirm Booking';
+                }
+            });
+        });
+
+        // Ella's burger js oo //
+            const hamburger = document.querySelector(".hamburger");
+            const navLinks = document.querySelector(".nav-links");
+            const overlay = document.querySelector(".overlay");
+            const navItems = document.querySelectorAll(".nav-links a");
+
+            hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            navLinks.classList.toggle("active");
+            overlay.classList.toggle("active");
+            });
+
+            overlay.addEventListener("click", () => {
+            hamburger.classList.remove("active");
+            navLinks.classList.remove("active");
+            overlay.classList.remove("active");
+            });
+
+            // Close menu on nav link click
+            navItems.forEach(item => {
+            item.addEventListener("click", () => {
+                hamburger.classList.remove("active");
+                navLinks.classList.remove("active");
+                overlay.classList.remove("active");
+            });
+            });
+//ANIMATION JS//
+
+    // 1. Identify all elements we want to watch using the NEW generic class
+    const elementsToAnimate = document.querySelectorAll('.js-animate-on-scroll');
+
+    // 2. Observer Options remain the same
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1 
+    };
+
+    // 3. Define the observer callback (remains the same)
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Element is visible! Add the class to trigger CSS animation.
+                entry.target.classList.add('is-visible');
+                
+                // Stop observing
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    // 4. Start watching your elements
+    elementsToAnimate.forEach(element => {
+        observer.observe(element);
+    });
+
+    let currentSlide = 0;
+
+  function moveSlide(direction) {
+    const wrapper = document.getElementById('wrapper');
+    
+    // Toggle between 0 and 1 since you have 2 slides
+    currentSlide += direction;
+
+    if (currentSlide > 1) currentSlide = 0; // Loop back to start
+    if (currentSlide < 0) currentSlide = 1; // Loop to end
+
+    // Move the wrapper! 
+    // If currentSlide is 1, it moves -50%. If 0, it moves 0%.
+    wrapper.style.transform = `translateX(-${currentSlide * 50}%)`;
+  }
+
+</script>
+</body>
+</html>

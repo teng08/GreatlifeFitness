@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Employee Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Alata&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+    <!-- css file ref-->
+    <link rel="stylesheet" href="login_style.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class = "login-wrapper">
+            <div class="login-header">
+                <div class = "login-logo">
+                    <img src = "images/logo-cropped.png">
+                </div>
+                <h1>Employee Dashboard</h1>
+            </div>
+            <p style = "font-size: 15px; opacity: 50%; text-align: center; margin-top: -1.30rem; margin-bottom: 1rem; color: rgb(255, 255, 255)">Sign in to access the booking system</p>
+        </div>
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="username" placeholder="Enter your username" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-login">Sign In</button>
+
+            <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+
+            <div class="error-message" id="errorMessage">
+                Invalid username or password. Please try again.
+            </div>
+        </form>
+    </div>
+
+    <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyClYCgNysqj_yWATZrskYzYWGqYL3jhtVU",
+        authDomain: "greatlifereservation.firebaseapp.com",
+        projectId: "greatlifereservation",
+        storageBucket: "greatlifereservation.firebasestorage.app",
+        messagingSenderId: "548367545885",
+        appId: "1:548367545885:web:c4462df23e88151faf78f4",
+        measurementId: "G-XSCQSP58CV"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Simple password hashing function (for demo - use better hashing in production)
+    async function hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    console.log('Login attempt started...');
+    console.log('Username:', username);
+    
+    // Validate reCAPTCHA
+    const recaptchaResponse = grecaptcha.getResponse();
+    console.log('reCAPTCHA response:', recaptchaResponse);
+    
+    if (!recaptchaResponse) {
+        errorMessage.textContent = 'Please complete the CAPTCHA verification.';
+        errorMessage.style.display = 'block';
+        setTimeout(() => errorMessage.style.display = 'none', 3000);
+        return;
+    }
+    
+    try {
+        console.log('Attempting to hash password...');
+        // Hash the entered password
+        const hashedPassword = await hashPassword(password);
+        console.log('Password hashed successfully:', hashedPassword);
+        
+        console.log('Querying Firestore for user...');
+        // Query Firestore for the user
+        const userSnapshot = await db.collection('adminUsers')
+            .where('username', '==', username)
+            .get();
+        
+        console.log('Query complete. Empty?', userSnapshot.empty);
+        console.log('Number of docs found:', userSnapshot.docs.length);
+        
+        if (userSnapshot.empty) {
+            console.log('No user found with that username');
+            errorMessage.textContent = 'Invalid username or password.';
+            errorMessage.style.display = 'block';
+            grecaptcha.reset();
+            setTimeout(() => errorMessage.style.display = 'none', 3000);
+            return;
+        }
+        
+        const userDoc = userSnapshot.docs[0];
+        const userData = userDoc.data();
+        console.log('User found:', userData);
+        console.log('Stored password:', userData.password);
+        console.log('Entered password:', password);
+        console.log('Passwords match?', userData.password === password);
+        
+        if (userData.password === password) {
+                
+            // Update last login
+            await db.collection('adminUsers').doc(userDoc.id).update({
+                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // Store session data
+            sessionStorage.setItem('adminUser', JSON.stringify({
+                id: userDoc.id,
+                username: userData.username,
+                email: userData.email,
+                role: userData.role
+            }));
+            
+            console.log('Session stored, redirecting...');
+            // Redirect to dashboard
+            window.location.href = 'employee-dashboard.html';
+        } else {
+            console.log('Password mismatch');
+            errorMessage.textContent = 'Invalid username or password.';
+            errorMessage.style.display = 'block';
+            grecaptcha.reset();
+            setTimeout(() => errorMessage.style.display = 'none', 3000);
+        }
+        
+    } catch (error) {
+        console.error('DETAILED LOGIN ERROR:', error);
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        errorMessage.textContent = 'An error occurred. Check console for details.';
+        errorMessage.style.display = 'block';
+        grecaptcha.reset();
+        setTimeout(() => errorMessage.style.display = 'none', 5000);
+    }
+});
+    </script>
+</body>
+</html>

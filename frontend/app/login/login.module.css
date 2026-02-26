@@ -1,0 +1,259 @@
+:root {
+    --darkBlue: #08054C;
+    --navyBlue: #130CB2;
+    --navyBlueSaturated: rgb(14, 59, 157);
+    --darkGrey: #676767;
+    --lightGrey: #BDBDBD;
+    --lightViolet: #928AFF;
+    --lightPurple: #B36AE5;
+    --lightGreen: #89BD92;
+    --accent: #e74c3c;
+}
+
+.body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: url("/images/wave-background-image-2xx.png") no-repeat center 10rem;
+    background-size: cover;
+    font-family: 'Alata', sans-serif;
+}
+
+.loginContainer {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 500px;
+    overflow: hidden;
+    backdrop-filter: blur(15px);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+}
+
+.loginWrapper {
+    background: #130CB2;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+.loginHeader {
+    color: white;
+    text-align: left;
+    padding: 1rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding-left: 2rem;
+}
+
+.loginHeader h1 {
+    font-size: 30px;
+    white-space: nowrap;
+    margin: 0;
+}
+
+.loginLogo {
+    width: 60px;
+    height: 60px;
+    margin-right: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loginLogo img {
+    width: 100%;
+    height: auto;
+    filter: brightness(0) invert(1);
+}
+
+.loginWrapper p {
+    font-size: 15px;
+    opacity: 0.5;
+    text-align: center;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.loginForm {
+    padding: 25px;
+}
+
+.formGroup {
+    margin-bottom: 20px;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 8px;
+    color: #0e3b9d;
+    font-size: 14px;
+}
+
+.inputWithIcon {
+    position: relative;
+}
+
+.inputWithIcon i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #676767;
+}
+
+.inputWithIcon input {
+    width: 100%;
+    padding: 12px 15px 12px 45px;
+    border: 2px solid #BDBDBD;
+    border-radius: 20px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.inputWithIcon input:focus {
+    border-color: #B36AE5;
+    outline: none;
+}
+
+.btnLogin {
+    width: 100%;
+    padding: 14px;
+    background: #130CB2;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 17px;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 10px;
+}
+
+.btnLogin:hover {
+    background: #08054C;
+}
+
+.errorMessage {
+    color: #e74c3c;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.gRecaptcha {
+    margin: 15px 0;
+    display: flex;
+    justify-content: center;
+}
+
+.recaptchaWidget {
+    width: 304px;
+    height: 78px;
+    background: #f9f9f9;
+    border: 1px solid #d3d3d3;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+    font-family: Roboto, helvetica, arial, sans-serif;
+    position: relative;
+}
+
+.recaptchaCheckboxContainer {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.recaptchaCheckbox {
+    width: 28px;
+    height: 28px;
+    border: 2px solid #c1c1c1;
+    border-radius: 2px;
+    background: #fff;
+    margin-right: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.recaptchaCheckbox.checked {
+    border-color: #4d90fe;
+}
+
+.recaptchaCheckbox.checked::after {
+    content: '';
+    width: 14px;
+    height: 8px;
+    border-left: 3px solid #00a651;
+    border-bottom: 3px solid #00a651;
+    transform: rotate(-45deg);
+    margin-bottom: 4px;
+}
+
+.recaptchaText {
+    color: #000;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.recaptchaLogo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+}
+
+.recaptchaLogo img {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 2px;
+}
+
+.recaptchaLogoText {
+    font-size: 8px;
+    color: #555;
+    text-align: center;
+}
+
+.recaptchaLinks {
+    font-size: 8px;
+    color: #555;
+    margin-top: 2px;
+}
+
+.recaptchaLinks a {
+    text-decoration: none;
+    color: #555;
+}
+
+.recaptchaLinks a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+    .loginContainer {
+        max-width: 100%;
+    }
+
+    .loginHeader {
+        padding-left: 1rem;
+    }
+
+    .body {
+        background: url("/images/wave-background-image-2xx.png") no-repeat center 40rem;
+        background-size: 160% auto;
+    }
+}
