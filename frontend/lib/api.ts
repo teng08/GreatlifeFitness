@@ -44,10 +44,17 @@ class ApiClient {
 
             return data;
         } catch (error) {
-            console.error('API request failed:', error);
+            const message = error instanceof Error ? error.message : 'Network error';
+            if (message.includes('Failed to fetch')) {
+                console.warn(`API unreachable at ${this.baseUrl}. Start backend server and verify NEXT_PUBLIC_API_URL.`);
+            } else {
+                console.error('API request failed:', error);
+            }
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Network error',
+                error: message.includes('Failed to fetch')
+                    ? 'Cannot connect to API server. Please start backend and check environment variables.'
+                    : message,
             };
         }
     }
