@@ -27,6 +27,17 @@ Monorepo for the GreatLife booking platform:
    npm run dev
    ```
 
+### Windows Notes
+If you use Command Prompt/PowerShell, create env files with:
+
+```powershell
+copy frontend\env.example frontend\.env.local
+copy backend\.env.example backend\.env
+```
+
+Then confirm backend is reachable by opening:
+`http://localhost:5000/api/health`
+
 ## Local URLs
 - Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:5000`
