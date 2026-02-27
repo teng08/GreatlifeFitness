@@ -5,19 +5,10 @@ const supabaseUrl = process.env.SUPABASE_URL;
 // Use Service Role Key for backend operations to bypass RLS
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
-const missingEnvError =
-  'Missing Supabase environment variables. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY).';
-
 if (!supabaseUrl || !supabaseKey) {
-  console.warn(`[DB CONFIG] ${missingEnvError}`);
+  throw new Error('Missing Supabase environment variables');
 }
 
-const supabase = (!supabaseUrl || !supabaseKey)
-  ? {
-    from() {
-      throw new Error(missingEnvError);
-    }
-  }
-  : createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 module.exports = supabase;
