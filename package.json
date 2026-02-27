@@ -1,10 +1,17 @@
 {
   "name": "dagreatlifefitness-v2",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=20.11.0 <25",
+    "npm": ">=10"
+  },
   "scripts": {
-    "dev": "npm run dev:frontend & npm run dev:backend",
+    "dev": "concurrently -n frontend,backend -c cyan,green \"npm run dev:frontend\" \"npm run dev:backend\"",
     "dev:frontend": "cd frontend && npm run dev",
     "dev:backend": "cd backend && npm run dev",
     "install:all": "cd frontend && npm install && cd ../backend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
