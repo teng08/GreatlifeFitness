@@ -19,6 +19,7 @@
     background: url("/images/wave-background-image-2xx.png") no-repeat center 10rem;
     background-size: cover;
     font-family: 'Alata', sans-serif;
+    background-color: #fff;
 }
 
 .loginContainer {
