@@ -1,10 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const supabase = require('../config/database');
-const { sendConfirmationEmail, sendApprovalEmail } = require('../services/emailService');
+const {
+    sendConfirmationEmail,
+    sendApprovalEmail,
+    sendRejectionEmail,
+    sendCancellationEmail,
+    sendPaymentEmail
+} = require('../services/emailService');
+const { requireAdmin } = require('../middleware/auth');
 
 // GET all bookings with optional filters
-router.get('/', async (req, res) => {
+router.get('/', requireAdmin, async (req, res) => {
     try {
         const { sport, status, date, search } = req.query;
 
@@ -46,7 +53,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET single booking by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -72,6 +79,26 @@ router.get('/:id', async (req, res) => {
         res.json({ success: true, data });
     } catch (error) {
         console.error('Error fetching booking:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// GET booking history by booking ID
+router.get('/:id/history', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const { data, error } = await supabase
+            .from('booking_history')
+            .select('*')
+            .eq('booking_id', id)
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        res.json({ success: true, data });
+    } catch (error) {
+        console.error('Error fetching booking history:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -105,7 +132,7 @@ router.post('/', async (req, res) => {
             .eq('sport_id', sport_id)
             .eq('booking_date', booking_date)
             .in('status', ['pending', 'confirmed'])
-            .or(`and(start_time.lte.${end_time},end_time.gte.${start_time})`);
+            .or(`and(start_time.lt.${end_time},end_time.gt.${start_time})`);
 
         if (checkError) throw checkError;
 
@@ -121,7 +148,7 @@ router.post('/', async (req, res) => {
             .from('blocked_slots')
             .select('*')
             .eq('booking_date', booking_date)
-            .or(`and(start_time.lte.${end_time},end_time.gte.${start_time})`);
+            .or(`and(start_time.lt.${end_time},end_time.gt.${start_time})`);
 
         if (blockedError) throw blockedError;
 
@@ -166,13 +193,6 @@ router.post('/', async (req, res) => {
 
         if (error) throw error;
 
-        // Send confirmation email
-        const emailData = {
-            ...data,
-            sport_name: data.sports.display_name
-        };
-        await sendConfirmationEmail(emailData);
-
         // Log booking creation
         await supabase
             .from('booking_history')
@@ -180,10 +200,22 @@ router.post('/', async (req, res) => {
                 booking_id: data.id,
                 action: 'created',
                 performed_by: customer_name,
-                changes: { status: 'pending' }
+                changes: { status: 'pending', payment_status: 'pending' }
             }]);
 
-        res.status(201).json({ success: true, data });
+        const emailResult = await sendConfirmationEmail(data);
+
+        res.status(201).json({
+            success: true,
+            data,
+            emailDelivery: {
+                sent: emailResult.success,
+                ...(emailResult.error ? { error: emailResult.error } : {})
+            },
+            ...(!emailResult.success
+                ? { warning: 'Booking saved, but the confirmation email could not be delivered.' }
+                : {})
+        });
     } catch (error) {
         console.error('Error creating booking:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -191,7 +223,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT update booking
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const updates = req.body;
@@ -237,7 +269,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // PUT approve booking
-router.put('/:id/approve', async (req, res) => {
+router.put('/:id/approve', requireAdmin, async (req, res) => {
     console.log(`[APPROVE] Request received for ID: ${req.params.id}`);
     try {
         const { id } = req.params;
@@ -248,7 +280,6 @@ router.put('/:id/approve', async (req, res) => {
             .from('bookings')
             .update({
                 status: 'confirmed',
-                payment_status: 'paid',
                 approved_by: approved_by || 'Admin',
                 approved_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
@@ -266,13 +297,6 @@ router.put('/:id/approve', async (req, res) => {
 
         if (error) throw error;
 
-        // Send approval email
-        const emailData = {
-            ...data,
-            sport_name: data.sports.display_name
-        };
-        await sendApprovalEmail(emailData);
-
         // Log approval
         await supabase
             .from('booking_history')
@@ -280,18 +304,118 @@ router.put('/:id/approve', async (req, res) => {
                 booking_id: id,
                 action: 'approved',
                 performed_by: approved_by || 'Admin',
-                changes: { status: 'confirmed', payment_status: 'paid' }
+                changes: { status: 'confirmed' }
             }]);
 
-        res.json({ success: true, data });
+        const emailResult = await sendApprovalEmail(data);
+
+        res.json({
+            success: true,
+            data,
+            emailDelivery: {
+                sent: emailResult.success,
+                ...(emailResult.error ? { error: emailResult.error } : {})
+            },
+            ...(!emailResult.success
+                ? { warning: 'Booking approved, but the approval email could not be delivered.' }
+                : {})
+        });
     } catch (error) {
         console.error('Error approving booking:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
+// PUT mark booking as paid
+router.put('/:id/mark-paid', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { paid_by, payment_method, payment_id } = req.body;
+
+        const { data: booking, error: fetchError } = await supabase
+            .from('bookings')
+            .select('id, status, payment_status')
+            .eq('id', id)
+            .single();
+
+        if (fetchError) throw fetchError;
+
+        if (!booking) {
+            return res.status(404).json({ success: false, error: 'Booking not found' });
+        }
+
+        if (booking.status !== 'confirmed') {
+            return res.status(400).json({
+                success: false,
+                error: 'Only confirmed bookings can be marked as paid'
+            });
+        }
+
+        if (booking.payment_status === 'paid') {
+            return res.status(400).json({
+                success: false,
+                error: 'Booking is already marked as paid'
+            });
+        }
+
+        const updates = {
+            payment_status: 'paid',
+            updated_at: new Date().toISOString()
+        };
+
+        if (payment_method) updates.payment_method = payment_method;
+        if (payment_id) updates.payment_id = payment_id;
+
+        const { data, error } = await supabase
+            .from('bookings')
+            .update(updates)
+            .eq('id', id)
+            .select(`
+        *,
+        sports (
+          name,
+          display_name,
+          price
+        )
+      `)
+            .single();
+
+        if (error) throw error;
+
+        await supabase
+            .from('booking_history')
+            .insert([{
+                booking_id: id,
+                action: 'paid',
+                performed_by: paid_by || 'Admin',
+                changes: {
+                    payment_status: 'paid',
+                    ...(payment_method ? { payment_method } : {}),
+                    ...(payment_id ? { payment_id } : {})
+                }
+            }]);
+
+        const emailResult = await sendPaymentEmail(data);
+
+        res.json({
+            success: true,
+            data,
+            emailDelivery: {
+                sent: emailResult.success,
+                ...(emailResult.error ? { error: emailResult.error } : {})
+            },
+            ...(!emailResult.success
+                ? { warning: 'Payment was recorded, but the payment email could not be delivered.' }
+                : {})
+        });
+    } catch (error) {
+        console.error('Error marking booking as paid:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // PUT reject booking
-router.put('/:id/reject', async (req, res) => {
+router.put('/:id/reject', requireAdmin, async (req, res) => {
     console.log(`[REJECT] Request received for ID: ${req.params.id}`);
     try {
         const { id } = req.params;
@@ -330,7 +454,13 @@ router.put('/:id/reject', async (req, res) => {
                 changes: { status: 'cancelled', rejection_reason }
             }]);
 
-        res.json({ success: true, data });
+        const emailResult = await sendRejectionEmail(data);
+        res.json({
+            success: true,
+            data,
+            emailDelivery: { sent: emailResult.success },
+            ...(!emailResult.success ? { warning: 'Booking rejected, but the status email could not be delivered.' } : {})
+        });
     } catch (error) {
         console.error('Error rejecting booking:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -338,7 +468,7 @@ router.put('/:id/reject', async (req, res) => {
 });
 
 // PUT cancel booking
-router.put('/:id/cancel', async (req, res) => {
+router.put('/:id/cancel', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { cancelled_by } = req.body;
@@ -374,7 +504,13 @@ router.put('/:id/cancel', async (req, res) => {
                 changes: { status: 'cancelled' }
             }]);
 
-        res.json({ success: true, data });
+        const emailResult = await sendCancellationEmail(data);
+        res.json({
+            success: true,
+            data,
+            emailDelivery: { sent: emailResult.success },
+            ...(!emailResult.success ? { warning: 'Booking cancelled, but the status email could not be delivered.' } : {})
+        });
     } catch (error) {
         console.error('Error cancelling booking:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -382,7 +518,7 @@ router.put('/:id/cancel', async (req, res) => {
 });
 
 // DELETE booking
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
 

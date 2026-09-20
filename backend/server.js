@@ -5,32 +5,9 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const defaultAllowedOrigins = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:3001',
-    'http://127.0.0.1:3001'
-];
-const envOrigins = (process.env.CORS_ORIGIN || '')
-    .split(',')
-    .map(origin => origin.trim())
-    .filter(Boolean);
-const allowedOrigins = envOrigins.length > 0 ? envOrigins : defaultAllowedOrigins;
-
 // Middleware
 app.use(cors({
-    origin: (origin, callback) => {
-        // Allow tools/postman/same-origin requests with no Origin header.
-        if (!origin) {
-            return callback(null, true);
-        }
-
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
-
-        return callback(new Error(`CORS blocked for origin: ${origin}`));
-    },
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
     credentials: true
 }));
 app.use(express.json());
@@ -99,7 +76,6 @@ app.listen(PORT, () => {
     console.log(`\n🚀 GreatLife Booking API Server running on port ${PORT}`);
     console.log(`📍 API URL: http://localhost:${PORT}`);
     console.log(`🏥 Health check: http://localhost:${PORT}/api/health\n`);
-    console.log(`🌐 Allowed CORS origins: ${allowedOrigins.join(', ')}\n`);
 });
 
 module.exports = app;

@@ -1,84 +1,55 @@
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Footer() {
     return (
-        <footer className="w-full text-white font-[Alata] pt-15 pb-5 px-10" style={{
-            background: 'linear-gradient(to top, #08054C 80%, rgba(8, 5, 76, 0.9) 95%, rgba(8, 5, 76, 0) 100%)'
-        }}>
-            <section id="contact" className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-                {/* Left Column */}
-                <div className="flex flex-col gap-6">
-                    <h3 className="text-2xl font-bold">Contact Us</h3>
-
-                    <div className="flex gap-4 items-center">
-                        <i className="fa-solid fa-location-dot text-yellow-400 text-xl"></i>
-                        <p className="text-base">GR8 Corporate Center, Bypass Road, Brgy.<br />Anonas, Urdaneta City, Pangasinan</p>
-                    </div>
-
-                    <div className="flex gap-4 items-center">
-                        <i className="fa-solid fa-phone text-yellow-400 text-xl"></i>
-                        <p className="text-base">0917 850 4876</p>
-                    </div>
-
-                    <div className="flex gap-4 items-center">
-                        <i className="fa-solid fa-envelope text-yellow-400 text-xl"></i>
-                        <p className="text-base">greatlife@gmail.com</p>
-                    </div>
-
+        <footer id="contact" className="bg-[#070b2e] px-6 pb-7 pt-20 text-white md:px-10 lg:px-16">
+            <div className="mx-auto max-w-[1152px]">
+                <div className="grid gap-14 border-b border-white/10 pb-16 lg:grid-cols-[.8fr_1.2fr]">
                     <div>
-                        <h3 className="text-xl font-bold mt-4 mb-2">Opening Hours</h3>
-                        <p className="text-base"><strong>Monday to Friday</strong><br />6:00 am to 10:00 pm</p>
-                        <p className="text-base"><strong>Saturday to Sunday</strong><br />9:00 am to 10:00 pm</p>
+                        <Link href="/" className="inline-flex items-center gap-3" aria-label="GreatLife Fitness home">
+                            <Image src="/images/logo.png" alt="GreatLife Fitness" width={76} height={76} className="h-16 w-auto object-contain" />
+                            <div>
+                                <p className="font-black uppercase tracking-[0.12em]">GreatLife</p>
+                                <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#f4c46b]">Fitness</p>
+                            </div>
+                        </Link>
+                        <p className="mt-6 max-w-sm leading-7 text-white/55">Train, play, and feel your best in one complete fitness facility in Urdaneta City.</p>
+                        <a href="https://www.facebook.com/GreatLifeFitness" target="_blank" rel="noreferrer" className="mt-7 inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-sm font-bold text-white/80 transition hover:border-[#f4c46b] hover:text-[#f4c46b]">
+                            Facebook <span aria-hidden="true">↗</span>
+                        </a>
                     </div>
 
-                    <div>
-                        <h3 className="text-xl font-bold mt-4 mb-2">Follow us online</h3>
-                        <div className="flex gap-4">
-                            <a href="https://www.facebook.com/GreatLifeFitness" target="_blank" rel="noopener noreferrer" className="text-white text-3xl hover:text-yellow-400 transition-colors">
-                                <i className="fa-brands fa-facebook"></i>
-                            </a>
+                    <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.3fr_.8fr]">
+                        <div>
+                            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#f4c46b]">Visit us</p>
+                            <address className="mt-5 not-italic leading-7 text-white/70">
+                                GR8 Corporate Center, Bypass Road<br />
+                                Brgy. Anonas, Urdaneta City, Pangasinan
+                            </address>
+                            <div className="mt-5 space-y-2 text-white/70">
+                                <a href="tel:+639178504876" className="block transition hover:text-white">0917 850 4876</a>
+                                <a href="mailto:greatlife@gmail.com" className="block transition hover:text-white">greatlife@gmail.com</a>
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#f4c46b]">Opening hours</p>
+                            <div className="mt-5 space-y-4 text-sm text-white/70">
+                                <p><strong className="block text-white">Monday–Friday</strong>6:00 AM–10:00 PM</p>
+                                <p><strong className="block text-white">Saturday–Sunday</strong>9:00 AM–10:00 PM</p>
+                            </div>
                         </div>
                     </div>
-
-                    <p className="text-base leading-relaxed mt-4 opacity-80">
-                        Whether you&apos;re an early bird or a night owl,<br />
-                        enjoy the serene mornings or beautifully lit<br />
-                        evenings with <span className="font-bold text-yellow-400">GreatLife Fitness</span>
-                    </p>
                 </div>
 
-                {/* Right Column (Map) */}
-                <div className="w-full">
-                    <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3835.4354922522443!2d120.57022247490235!3d15.990829684677427!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33913f0040788f6b%3A0xef4f73ec3c2074ef!2sGreatLife%20Fitness!5e0!3m2!1sen!2sph!4v1757682228875!5m2!1sen!2sph"
-                        width="100%"
-                        height="400"
-                        style={{ border: 0 }}
-                        allowFullScreen
-                        loading="lazy"
-                        className="rounded-2xl shadow-xl"
-                    ></iframe>
-                </div>
-            </section>
-
-            {/* Bottom Bar */}
-            <div className="max-w-[1200px] mx-auto mt-15 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
-                <div className="flex gap-4 text-sm font-medium">
-                    <Link href="/faqs-developers" className="hover:text-yellow-400 transition-colors">FAQs & About Developers</Link>
-                    <span className="opacity-30">|</span>
-                    <Link href="/privacy" className="hover:text-yellow-400 transition-colors">Privacy Policy</Link>
-                    <span className="opacity-30">|</span>
-                    <Link href="/terms-conditions" className="hover:text-yellow-400 transition-colors">Terms & Conditions</Link>
-                </div>
-
-                <div className="relative w-[150px] h-[60px]">
-                    <Image
-                        src="/images/logo.png"
-                        alt="GreatLife Logo"
-                        fill
-                        className="object-contain"
-                    />
+                <div className="flex flex-col gap-5 pt-7 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between">
+                    <p>© {new Date().getFullYear()} GreatLife Fitness. All rights reserved.</p>
+                    <div className="flex flex-wrap gap-x-5 gap-y-2">
+                        <Link href="/faqs-developers" className="hover:text-white">FAQs</Link>
+                        <Link href="/privacy" className="hover:text-white">Privacy</Link>
+                        <Link href="/terms-conditions" className="hover:text-white">Terms</Link>
+                        <Link href="/login" className="hover:text-white">Staff portal</Link>
+                    </div>
                 </div>
             </div>
         </footer>

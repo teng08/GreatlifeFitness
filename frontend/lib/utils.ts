@@ -18,7 +18,7 @@ export function formatDate(dateString: string): string {
     if (!dateString) return 'Invalid Date';
 
     try {
-        const date = new Date(dateString);
+        const date = parseDateStringAsLocal(dateString);
         if (isNaN(date.getTime())) return 'Invalid Date';
 
         return date.toLocaleDateString('en-US', {
@@ -27,7 +27,8 @@ export function formatDate(dateString: string): string {
             month: 'short',
             day: 'numeric'
         });
-    } catch (e) {
+    } catch (error) {
+        void error;
         return 'Invalid Date';
     }
 }
@@ -36,7 +37,7 @@ export function formatDateLong(dateString: string): string {
     if (!dateString) return 'Invalid Date';
 
     try {
-        const date = new Date(dateString);
+        const date = parseDateStringAsLocal(dateString);
         if (isNaN(date.getTime())) return 'Invalid Date';
 
         return date.toLocaleDateString('en-US', {
@@ -45,7 +46,8 @@ export function formatDateLong(dateString: string): string {
             month: 'long',
             day: 'numeric'
         });
-    } catch (e) {
+    } catch (error) {
+        void error;
         return 'Invalid Date';
     }
 }
@@ -57,14 +59,31 @@ export function formatCurrency(amount: number): string {
 export function getAvailableDates(daysAhead: number = 3): string[] {
     const dates: string[] = [];
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     for (let i = 0; i < daysAhead; i++) {
-        const date = new Date();
+        const date = new Date(today);
         date.setDate(today.getDate() + i);
-        dates.push(date.toISOString().split('T')[0]);
+        dates.push(formatDateAsLocalISO(date));
     }
 
     return dates;
+}
+
+function formatDateAsLocalISO(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function parseDateStringAsLocal(dateString: string): Date {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
+    if (match) {
+        const [, year, month, day] = match;
+        return new Date(Number(year), Number(month) - 1, Number(day));
+    }
+    return new Date(dateString);
 }
 
 export function isValidEmail(email: string): boolean {

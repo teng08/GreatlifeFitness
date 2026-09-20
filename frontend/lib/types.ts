@@ -23,7 +23,7 @@ export interface Booking {
     payment_method: string;
     amount: number;
     status: 'pending' | 'confirmed' | 'cancelled';
-    payment_status: 'pending' | 'paid';
+    payment_status: 'pending' | 'unpaid' | 'paid' | 'refunded';
     payment_id?: string;
     rental_option: string;
     approved_by?: string;
@@ -36,6 +36,15 @@ export interface Booking {
     created_at: string;
     updated_at: string;
     sports?: Sport;
+}
+
+export interface BookingHistoryEntry {
+    id: number;
+    booking_id: number;
+    action: string;
+    performed_by?: string | null;
+    changes?: Record<string, unknown> | null;
+    created_at: string;
 }
 
 export interface CreateBookingData {
@@ -70,13 +79,47 @@ export interface AdminStats {
 }
 
 export interface MonthlyReport {
-    month: string;
-    year: string;
+    month?: string;
+    year?: string;
+    startDate: string;
+    endDate: string;
     totalBookings: number;
     totalRevenue: number;
+    confirmedRevenue: number;
+    paidRevenue: number;
     confirmedBookings: number;
     pendingBookings: number;
     cancelledBookings: number;
+    paymentCounts: {
+        unpaid: number;
+        paid: number;
+    };
+    bookingsBySport: Record<string, number>;
+    revenueByPaymentMethod: Record<string, number>;
+    topCustomers: Array<{
+        email: string | null;
+        customer_name: string | null;
+        phone: string | null;
+        bookings: number;
+        totalAmount: number;
+        confirmedAmount: number;
+        paidAmount: number;
+    }>;
+    peakHours: Array<{
+        hour: string;
+        bookings: number;
+    }>;
+    trends: {
+        daily: Array<{
+            date: string;
+            totalBookings: number;
+            confirmedBookings: number;
+            paidBookings: number;
+            totalRevenue: number;
+            confirmedRevenue: number;
+            paidRevenue: number;
+        }>;
+    };
     bookings: Booking[];
 }
 
@@ -84,6 +127,11 @@ export interface ApiResponse<T> {
     success: boolean;
     data?: T;
     error?: string;
+    warning?: string;
+    emailDelivery?: {
+        sent: boolean;
+        error?: string;
+    };
 }
 
 export interface User {

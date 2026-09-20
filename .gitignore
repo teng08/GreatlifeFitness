@@ -1,5 +1,31 @@
-.DS_Store
-.vscode/
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
+build/
+dist/
+.next/
+out/
+
+# Misc
+.DS_Store
+*.pem
+*.log
+.vscode/
+.idea/
+
+# Environment Variables
 .env
-.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Typescript
+*.tsbuildinfo
+next-env.d.ts

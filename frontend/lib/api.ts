@@ -6,12 +6,19 @@ import type {
     UpdateBookingData,
     AdminStats,
     MonthlyReport,
+    BookingHistoryEntry,
     ApiResponse,
     LoginResponse,
     BlockedSlot
 } from './types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const normalizeBaseUrl = (value?: string) => {
+    const trimmed = value?.trim();
+    if (!trimmed) return '/api';
+    return trimmed.replace(/\/+$/, '');
+};
+
+const API_URL = normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL);
 
 class ApiClient {
     private baseUrl: string;
@@ -25,24 +32,52 @@ class ApiClient {
         options?: RequestInit
     ): Promise<ApiResponse<T>> {
         try {
+            const token = typeof window !== 'undefined'
+                ? window.localStorage.getItem('adminToken')
+                : null;
             const response = await fetch(`${this.baseUrl}${endpoint}`, {
                 ...options,
                 headers: {
                     'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
                     ...options?.headers,
                 },
             });
 
-            const data = await response.json();
+            const rawBody = await response.text();
+            let payload: ApiResponse<T> | null = null;
+
+            if (rawBody) {
+                try {
+                    payload = JSON.parse(rawBody) as ApiResponse<T>;
+                } catch {
+                    payload = null;
+                }
+            }
 
             if (!response.ok) {
+                if (response.status === 401 && typeof window !== 'undefined' && endpoint !== '/admin/login') {
+                    window.localStorage.removeItem('adminToken');
+                    window.localStorage.removeItem('adminUser');
+                    window.location.assign('/login');
+                }
+                const fallbackMessage = rawBody
+                    ? rawBody.replace(/\s+/g, ' ').trim().slice(0, 220)
+                    : `Request failed with status ${response.status}`;
                 return {
                     success: false,
-                    error: data.error || 'An error occurred',
+                    error: payload?.error || fallbackMessage,
                 };
             }
 
-            return data;
+            if (!payload) {
+                return {
+                    success: false,
+                    error: 'Invalid API response format',
+                };
+            }
+
+            return payload;
         } catch (error) {
             console.error('API request failed:', error);
             return {
@@ -163,6 +198,36 @@ class ApiClient {
         );
     }
 
+    async getReportRange(
+        startDate: string,
+        endDate: string
+    ): Promise<ApiResponse<MonthlyReport>> {
+        const params = new URLSearchParams({ startDate, endDate });
+        return this.request<MonthlyReport>(`/admin/reports?${params.toString()}`);
+    }
+
+    async getBookingHistory(id: number): Promise<ApiResponse<BookingHistoryEntry[]>> {
+        return this.request<BookingHistoryEntry[]>(`/bookings/${id}/history`);
+    }
+
+    async markBookingPaid(
+        id: number,
+        paidBy: string,
+        options?: {
+            payment_method?: string;
+            payment_id?: string;
+        }
+    ): Promise<ApiResponse<Booking>> {
+        return this.request<Booking>(`/bookings/${id}/mark-paid`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                paid_by: paidBy,
+                payment_method: options?.payment_method,
+                payment_id: options?.payment_id,
+            }),
+        });
+    }
+
     // Blocked Slots endpoints
     async getBlockedSlots(): Promise<ApiResponse<BlockedSlot[]>> {
         return this.request<BlockedSlot[]>('/blocked-slots');
@@ -188,4 +253,7 @@ class ApiClient {
     }
 }
 
-export const api = new ApiClient(API_URL);
+const apiClient = new ApiClient(API_URL);
+
+export const api = apiClient;
+export default apiClient;

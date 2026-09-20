@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const supabase = require('../config/database');
+const { requireAdmin } = require('../middleware/auth');
 
 // GET all blocked slots
 router.get('/', async (req, res) => {
@@ -26,7 +27,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST create blocked slot
-router.post('/', async (req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
     try {
         const { sport_id, name, booking_date, start_time, end_time } = req.body;
 
@@ -55,7 +56,7 @@ router.post('/', async (req, res) => {
 });
 
 // DELETE blocked slot
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { error } = await supabase

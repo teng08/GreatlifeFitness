@@ -4,6 +4,7 @@ import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { api } from '@/lib/api';
+import { sendBookingEmailFromBrowser } from '@/lib/email';
 import type { Sport, CreateBookingData, BlockedSlot } from '@/lib/types';
 import {
     getAvailableDates,
@@ -14,21 +15,53 @@ import {
     isValidPhone,
     validateTimeSlot
 } from '@/lib/utils';
-import emailjs from '@emailjs/browser';
+
+const normalizeSportKey = (value?: string | null) =>
+    (value || '').toLowerCase().trim().replace(/\s+/g, '-');
+
+const FALLBACK_SPORTS: Record<string, Sport> = {
+    basketball: {
+        id: 1,
+        name: 'basketball',
+        display_name: 'Basketball Court',
+        description: 'Full court with professional hoops',
+        price: 800,
+        max_people: 15,
+        created_at: ''
+    },
+    'table-tennis': {
+        id: 2,
+        name: 'table-tennis',
+        display_name: 'Table Tennis',
+        description: 'Table tennis facilities',
+        price: 400,
+        max_people: 4,
+        created_at: ''
+    },
+    badminton: {
+        id: 3,
+        name: 'badminton',
+        display_name: 'Badminton Court',
+        description: 'Professional badminton court',
+        price: 600,
+        max_people: 4,
+        created_at: ''
+    }
+};
 
 export default function BookingPage({ params }: { params: Promise<{ sport: string }> }) {
     const { sport: sportParam } = use(params);
-    const normalizeSportKey = (value?: string | null) =>
-        (value || '').toLowerCase().trim().replace(/\s+/g, '-');
     const sportKey = normalizeSportKey(sportParam);
     const router = useRouter();
-    const [sport, setSport] = useState<Sport | null>(null);
+    const [sport, setSport] = useState<Sport | null>(() => FALLBACK_SPORTS[sportKey] || null);
     const [loading, setLoading] = useState(true);
+    const [bookingServiceAvailable, setBookingServiceAvailable] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [bookingId, setBookingId] = useState('');
+    const [emailSent, setEmailSent] = useState<boolean | null>(null);
 
     const [formData, setFormData] = useState({
         customer_name: '',
@@ -51,12 +84,6 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
         { label: 'Court + Full Lights (₱700/hr)', value: 'full-lights', price: 700 },
         { label: 'Court + Middle Lights + AC (₱800/hr)', value: 'middle-lights-ac', price: 800 },
         { label: 'Court + Full Lights + AC (₱1,000/hr)', value: 'full-lights-ac', price: 1000 },
-    ];
-
-    const VALID_EMAIL_DOMAINS = [
-        'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com',
-        'aol.com', 'icloud.com', 'protonmail.com', 'zoho.com',
-        'mail.com', 'yandex.com'
     ];
 
     const SPORT_BASE_PRICES: Record<string, number> = {
@@ -86,35 +113,42 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
 
     const availableDates = getAvailableDates(3);
 
-    const loadSport = async () => {
-        setLoading(true);
-        const [sportResponse, blockedResponse] = await Promise.all([
-            api.getSports(),
-            api.getBlockedSlots()
-        ]);
-
-        if (sportResponse.success && sportResponse.data) {
-            const foundSport = sportResponse.data.find((s) => {
-                const normalizedName = normalizeSportKey(s.name);
-                const normalizedDisplay = normalizeSportKey(s.display_name);
-                return normalizedName === sportKey || normalizedDisplay === sportKey;
-            });
-            if (foundSport) {
-                setSport(foundSport);
-            }
-        }
-
-        if (blockedResponse.success && blockedResponse.data) {
-            setBlockedSlots(blockedResponse.data);
-        }
-        setLoading(false);
-    };
-
     useEffect(() => {
-        loadSport();
-        // Initialize EmailJS
-        emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || '');
-    }, [sportParam]);
+        const loadSportData = async () => {
+            setLoading(true);
+            setSport(FALLBACK_SPORTS[sportKey] || null);
+            setBookingServiceAvailable(false);
+            const [sportResponse, blockedResponse] = await Promise.all([
+                api.getSports(),
+                api.getBlockedSlots()
+            ]);
+
+            let foundSport: Sport | undefined;
+            if (sportResponse.success && sportResponse.data) {
+                foundSport = sportResponse.data.find((s) => {
+                    const normalizedName = normalizeSportKey(s.name);
+                    const normalizedDisplay = normalizeSportKey(s.display_name);
+                    return normalizedName === sportKey || normalizedDisplay === sportKey;
+                });
+                if (foundSport) {
+                    setSport(foundSport);
+                }
+            }
+
+            if (blockedResponse.success && blockedResponse.data) {
+                setBlockedSlots(blockedResponse.data);
+            }
+
+            setBookingServiceAvailable(Boolean(
+                foundSport &&
+                !sportResponse.warning &&
+                blockedResponse.success
+            ));
+            setLoading(false);
+        };
+
+        void loadSportData();
+    }, [sportKey]);
 
     useEffect(() => {
         if (loading || !sport) return;
@@ -182,11 +216,6 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
             newErrors.email = 'Email is required';
         } else if (!isValidEmail(formData.email)) {
             newErrors.email = 'Invalid email address';
-        } else {
-            const domain = formData.email.split('@')[1]?.toLowerCase();
-            if (!VALID_EMAIL_DOMAINS.includes(domain)) {
-                newErrors.email = 'Please use a valid email (Gmail, Yahoo, Outlook, etc.)';
-            }
         }
 
         if (!formData.phone.trim()) {
@@ -195,8 +224,9 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
             newErrors.phone = 'Phone number must be exactly 11 digits';
         }
 
-        if (formData.people_count < 1 || formData.people_count > 15) {
-            newErrors.people_count = `Number of people must be between 1 and 15`;
+        const capacity = sport?.max_people || 15;
+        if (formData.people_count < 1 || formData.people_count > capacity) {
+            newErrors.people_count = `Number of people must be between 1 and ${capacity}`;
         }
 
         // Only require rental option for certain sports (Basketball/Badminton usually have options)
@@ -242,6 +272,8 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
     };
 
     const handleBookNow = () => {
+        if (!bookingServiceAvailable) return;
+
         if (validateForm()) {
             setShowConfirmation(true);
         }
@@ -252,33 +284,6 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
             setErrors(prev => ({ ...prev, agreements: '' }));
         }
     }, [termsAccepted, privacyAccepted, errors.agreements]);
-
-    const sendConfirmationEmail = async (bookingData: any) => {
-        try {
-            const templateParams = {
-                customer_name: bookingData.customer_name,
-                to_email: bookingData.email,
-                sport_name: sport?.display_name || '',
-                booking_date: formatDateLong(bookingData.booking_date),
-                start_time: formatTimeToAMPM(bookingData.start_time),
-                end_time: formatTimeToAMPM(bookingData.end_time),
-                people_count: bookingData.people_count,
-                amount: formatCurrency(bookingData.amount),
-                booking_id: bookingData.id
-            };
-
-            await emailjs.send(
-                process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || '',
-                process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '',
-                templateParams
-            );
-
-            console.log('Confirmation email sent successfully');
-        } catch (error) {
-            console.error('Failed to send confirmation email:', error);
-            // Don't block the booking if email fails
-        }
-    };
 
     const calculateDuration = () => {
         if (!formData.start_time || !formData.end_time) return 0;
@@ -321,11 +326,16 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
             if (response.success && response.data) {
                 setBookingId(response.data.id.toString());
 
-                // Send confirmation email
-                await sendConfirmationEmail({
-                    ...bookingData,
-                    id: response.data.id
-                });
+                let confirmationEmailSent = response.emailDelivery?.sent ?? false;
+                if (!confirmationEmailSent) {
+                    const browserDelivery = await sendBookingEmailFromBrowser(response.data, 'PENDING');
+                    confirmationEmailSent = browserDelivery.sent;
+                    if (!browserDelivery.sent) {
+                        console.error('EmailJS browser fallback failed:', browserDelivery.error);
+                    }
+                }
+
+                setEmailSent(confirmationEmailSent);
 
                 setShowConfirmation(false);
                 setBookingSuccess(true);
@@ -333,13 +343,14 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
                 alert(response.error || 'Booking failed. Please try again.');
             }
         } catch (error) {
+            console.error('Booking failed:', error);
             alert('An error occurred. Please try again.');
         } finally {
             setSubmitting(false);
         }
     };
 
-    if (loading) {
+    if (loading && !sport) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
@@ -376,10 +387,20 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-900 mb-4">Booking Confirmed!</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 mb-4">Booking Request Submitted!</h2>
                         <p className="text-gray-600 mb-6">
-                            We&apos;ve sent a confirmation message to your email and phone.
+                            Your booking is now <span className="font-semibold text-yellow-600">Pending Approval</span>. We&apos;ll email you once it&apos;s approved.
                         </p>
+                        {emailSent !== null && (
+                            <div className={`mb-6 rounded-lg border px-4 py-3 text-sm ${emailSent
+                                ? 'border-green-200 bg-green-50 text-green-800'
+                                : 'border-amber-200 bg-amber-50 text-amber-900'
+                                }`}>
+                                {emailSent
+                                    ? `A confirmation email was sent to ${formData.email}.`
+                                    : 'Your booking was saved, but the confirmation email could not be sent. Please verify the email address or contact GreatLife.'}
+                            </div>
+                        )}
                         <div className="bg-gray-50 rounded-lg p-6 mb-6 text-left">
                             <h3 className="font-semibold text-gray-900 mb-4">Your Reservation Details:</h3>
                             <div className="space-y-2 text-gray-700">
@@ -412,13 +433,25 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
     }
 
     return (
-        <div className="min-h-screen bg-white font-[Alata] overflow-x-hidden">
+        <div className="min-h-screen bg-white bg-[url('/images/wave-background-image-2x.png')] bg-no-repeat bg-[length:100%_auto] bg-bottom font-[Alata] overflow-x-hidden">
             <div className="tab-content active" id="booking">
                 <div className="max-w-[1200px] mx-auto px-5 py-12">
+                    {!loading && !bookingServiceAvailable && (
+                        <div
+                            role="alert"
+                            className="mb-8 rounded-xl border border-amber-300 bg-amber-50 px-5 py-4 text-amber-950 shadow-sm"
+                        >
+                            <p className="font-bold">Online booking is temporarily unavailable.</p>
+                            <p className="mt-1 text-sm">
+                                You can view the court details, but reservations cannot be submitted until the database connection is restored.
+                            </p>
+                        </div>
+                    )}
+
                     <div className="intro-container mb-12">
                         <div className="intro js-animate-on-scroll">
                             <h2 className="text-4xl font-bold text-gray-900 mb-2">{sport.display_name}</h2>
-                            <p className="text-xl text-gray-600">Full court with professional hoops</p>
+                            <p className="text-xl text-gray-600">{sport.description}</p>
                         </div>
                     </div>
 
@@ -462,36 +495,36 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                         {/* Booking Form */}
-                        <div className="booking-form js-animate-on-scroll slide-left bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+                        <div className="booking-form js-animate-on-scroll slide-left bg-white p-8 rounded-2xl shadow-lg border border-gray-000">
                             <div className="prompts mb-8">
-                                <h3 className="text-2xl font-bold text-gray-900">Reservation Details</h3>
+                                <h3 className="text-2xl font-bold text-black">Reservation Details</h3>
                             </div>
 
                             <form className="space-y-6">
                                 <div className="form-group">
-                                    <label className="block text-gray-700 font-bold mb-2">Full Name</label>
+                                    <label className="block text-black font-bold mb-2">Full Name</label>
                                     <input
                                         type="text"
                                         name="customer_name"
                                         value={formData.customer_name}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                         className="w-full px-4 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="Enter your full name"
                                     />
                                     {errors.customer_name && <p className="text-red-600 text-sm mt-1">{errors.customer_name}</p>}
                                 </div>
 
                                 <div className="form-group">
-                                    <label className="block text-gray-800 font-bold mb-2">Email Address</label>
+                                    <label className="block text-gray-700 font-bold mb-2">Email Address</label>
                                     <input
                                         type="email"
                                         name="email"
                                         value={formData.email}
                                         onChange={handleInputChange}
-                                          className="w-full px-4 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                         className="w-full px-4 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="Enter your email"
                                     />
-                                    <small className="text-gray-500 block mt-1">Only Gmail, Yahoo, Outlook, and other major providers accepted</small>
+                                    <small className="text-gray-500 block mt-1">We&apos;ll send your booking status to this address.</small>
                                     {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email}</p>}
                                 </div>
 
@@ -503,7 +536,7 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
                                         value={formData.phone}
                                         onChange={handleInputChange}
                                         maxLength={11}
-                                          className="w-full px-4 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                         className="w-full px-4 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="Enter your 11-digit phone number"
                                     />
                                     <small className="text-gray-500 block mt-1">Must be exactly 11 digits</small>
@@ -516,42 +549,84 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
                                 </div>
 
                                 <div className="form-group">
-                                    <label className="block text-gray-700 font-bold mb-2">Number of People</label>
+                                    <label className="block text-black font-bold mb-2">Number of People</label>
                                     <input
                                         type="number"
                                         name="people_count"
                                         value={formData.people_count}
                                         onChange={handleInputChange}
                                         min={1}
-                                        max={15}
-                                          className="w-full px-4 py-3 border text-gray-600 border-gray-100 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="How many people? (Max 15)"
+                                        max={sport.max_people || 15}
+                                         className="w-full px-4 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent block text-black font-bold"
+                                        placeholder={`How many people? (Max ${sport.max_people || 15})`}
                                     />
                                     {errors.people_count && <p className="text-red-600 text-sm mt-1">{errors.people_count}</p>}
                                 </div>
 
                                 <div className="form-group">
-                                    <label className="block text-gray-700 font-bold mb-4">Preferred Time</label>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <label className="block text-black font-bold mb-4">Preferred Time</label>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-600 mb-1">Start Time:</label>
-                                            <input
-                                                type="time"
-                                                name="start_time"
-                                                value={formData.start_time}
-                                                onChange={handleInputChange}
-                                                 className="w-full px-4 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            />
+                                            <div className="flex gap-2 items-center">
+                                                <input
+                                                    type="time"
+                                                    name="start_time"
+                                                    value={formData.start_time}
+                                                    onChange={handleInputChange}
+                                                    className="flex-1 px-4 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                />
+                                                <select
+                                                    value={parseInt(formData.start_time.split(':')[0]) >= 12 ? 'PM' : 'AM'}
+                                                    onChange={(e) => {
+                                                        const target = e.target.value;
+                                                        setFormData((prev) => {
+                                                            if (!prev.start_time.includes(':')) return prev;
+                                                            const [h, m] = prev.start_time.split(':');
+                                                            let hour = parseInt(h);
+                                                            if (target === 'PM' && hour < 12) hour += 12;
+                                                            if (target === 'AM' && hour >= 12) hour -= 12;
+                                                            return { ...prev, start_time: `${String(hour).padStart(2, '0')}:${m}` };
+                                                        });
+                                                        setErrors((prev) => (prev.time ? { ...prev, time: '' } : prev));
+                                                    }}
+                                                    className="w-24 px-3 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-center"
+                                                >
+                                                    <option value="AM">AM</option>
+                                                    <option value="PM">PM</option>
+                                                </select>
+                                            </div>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-600 mb-1">End Time:</label>
-                                            <input
-                                                type="time"
-                                                name="end_time"
-                                                value={formData.end_time}
-                                                onChange={handleInputChange}
-                                                 className="w-full px-4 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            />
+                                            <div className="flex gap-2 items-center">
+                                                <input
+                                                    type="time"
+                                                    name="end_time"
+                                                    value={formData.end_time}
+                                                    onChange={handleInputChange}
+                                                    className="flex-1 px-4 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                />
+                                                <select
+                                                    value={parseInt(formData.end_time.split(':')[0]) >= 12 ? 'PM' : 'AM'}
+                                                    onChange={(e) => {
+                                                        const target = e.target.value;
+                                                        setFormData((prev) => {
+                                                            if (!prev.end_time.includes(':')) return prev;
+                                                            const [h, m] = prev.end_time.split(':');
+                                                            let hour = parseInt(h);
+                                                            if (target === 'PM' && hour < 12) hour += 12;
+                                                            if (target === 'AM' && hour >= 12) hour -= 12;
+                                                            return { ...prev, end_time: `${String(hour).padStart(2, '0')}:${m}` };
+                                                        });
+                                                        setErrors((prev) => (prev.time ? { ...prev, time: '' } : prev));
+                                                    }}
+                                                    className="w-24 px-3 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-center"
+                                                >
+                                                    <option value="AM">AM</option>
+                                                    <option value="PM">PM</option>
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
                                     <small className="text-gray-500 block mt-2">Operating hours: 8:00 AM - 10:00 PM. Maximum 4 hours per booking.</small>
@@ -565,7 +640,7 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
                                             name="rental_option"
                                             value={formData.rental_option}
                                             onChange={handleInputChange}
-                                             className="w-full px-4 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full px-4 py-3 border text-black border-gray-300 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white block font-bold"
                                         >
                                             <option value="" disabled>Choose a configuration</option>
                                             {RENTAL_OPTIONS.map(opt => (
@@ -607,7 +682,7 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
                                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Payment Method</h3>
                                 <p className="text-gray-600 mb-8">Payment will be collected in cash upon arrival at the facility</p>
 
-                                <div className="payment-box p-8 border-2 border-dashed border-green-200 rounded-2xl text-center bg-green-50/30">
+                                <div className="payment-box w-full p-8 border-2 border-dashed border-green-200 rounded-2xl text-center bg-green-50/30 flex flex-col items-center justify-center min-h-[280px]">
                                     <div className="mb-4">
                                         <span className="text-5xl">💵</span>
                                     </div>
@@ -620,9 +695,13 @@ export default function BookingPage({ params }: { params: Promise<{ sport: strin
 
                                 <button
                                     onClick={handleBookNow}
-                                    className="w-full mt-10 bg-gradient-to-b from-[#1e3c72] to-[#8e44ad] text-white py-5 rounded-xl text-xl font-bold shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                    disabled={!bookingServiceAvailable}
+                                    className={`w-full mt-10 text-white py-5 rounded-xl text-xl font-bold shadow-xl transition-all ${bookingServiceAvailable
+                                        ? 'bg-gradient-to-b from-[#1e3c72] to-[#8e44ad] hover:scale-[1.02] active:scale-[0.98]'
+                                        : 'cursor-not-allowed bg-gray-400 shadow-none'
+                                        }`}
                                 >
-                                    Book Now
+                                    {bookingServiceAvailable ? 'Book Now' : 'Booking Service Unavailable'}
                                 </button>
 
                                 <p className="text-gray-700 font-medium">

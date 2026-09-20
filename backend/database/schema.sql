@@ -74,10 +74,10 @@ INSERT INTO sports (name, display_name, description, price, max_people) VALUES
   ('badminton', 'Badminton Court', 'Professional badminton court', 600.00, 4)
 ON CONFLICT (name) DO NOTHING;
 
--- Insert default admin user (password: admin123 - CHANGE THIS IN PRODUCTION!)
--- Password hash generated with bcrypt for 'admin123'
+-- Insert default admin user (password: Admin123 - CHANGE THIS IN PRODUCTION!)
+-- Password hash generated with bcrypt for 'Admin123'
 INSERT INTO users (username, password_hash, full_name, role) VALUES
-  ('admin', '$2a$10$XQZ9cKvKJ7YZ5Z5Z5Z5Z5eO5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z', 'Peter Johnwyn A. Quirimit', 'admin')
+  ('Admin', '$2a$10$ybiZFCURjXTf3GJ5OPb6JeWcbO4P97ijCr7PxmcanrSq81eyuZvdi', 'Peter Johnwyn A. Quirimit', 'admin')
 ON CONFLICT (username) DO NOTHING;
 
 -- Note: You'll need to generate a proper bcrypt hash for the admin password

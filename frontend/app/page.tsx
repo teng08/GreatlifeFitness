@@ -1,202 +1,231 @@
 'use client';
 
-import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { useEffect } from 'react';
+
+const courts = [
+  {
+    name: 'Basketball',
+    eyebrow: 'Full indoor court',
+    image: '/images/basketball.jpg',
+    href: '/booking/basketball',
+    price: 'From ₱800/hr',
+    description: 'A bright, air-conditioned court built for team runs, training, and competitive play.',
+  },
+  {
+    name: 'Badminton',
+    eyebrow: 'Fast-paced sessions',
+    image: '/images/badminton.jpg',
+    href: '/booking/badminton',
+    price: 'From ₱600/hr',
+    description: 'A comfortable indoor setup for casual matches, drills, and your next friendly tournament.',
+  },
+  {
+    name: 'Table tennis',
+    eyebrow: 'Quick games, big energy',
+    image: '/images/tabletennis.jpg',
+    href: '/booking/table-tennis',
+    price: 'From ₱400/hr',
+    description: 'A dedicated play area for sharp rallies, focused practice, and easy games with friends.',
+  },
+];
+
+const amenities = [
+  { number: '01', title: 'Train', text: 'Strength, cardio, and conditioning equipment in one complete fitness space.' },
+  { number: '02', title: 'Play', text: 'Well-maintained indoor courts with options for lighting and air conditioning.' },
+  { number: '03', title: 'Recover', text: 'Locker rooms and a comfortable facility to reset before or after your session.' },
+];
+
+const gallery = [
+  { src: '/images/gym.jpg', alt: 'GreatLife gym floor' },
+  { src: '/images/cycling.jpg', alt: 'Indoor cycling area' },
+  { src: '/images/zumba.jpg', alt: 'Group fitness studio' },
+  { src: '/images/weights.jpg', alt: 'Strength training area' },
+  { src: '/images/locker.jpg', alt: 'Locker room' },
+  { src: '/images/training.jpg', alt: 'Training equipment' },
+];
 
 export default function HomePage() {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
-    const observerOptions = {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.1
-    };
+    const elements = document.querySelectorAll<HTMLElement>('[data-reveal]');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
+    );
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-        }
-      });
-    }, observerOptions);
-
-    const elements = document.querySelectorAll('.js-animate-on-scroll');
-    elements.forEach(el => observer.observe(el));
-
-    return () => {
-      elements.forEach(el => observer.unobserve(el));
-    };
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
   }, []);
 
-  const facilityImages = [
-    'gym.jpg', 'cycling.jpg', 'zumba.jpg', 'locker.jpg', 'training.jpg',
-    'weights.jpg', 'cr.jpg', 'bmcourt.jpg', 'ttcourt.jpg', 'muscle.jpg'
-  ];
-
   return (
-    <div className="bg-white font-[Alata] overflow-x-hidden">
-      {/* Hero Section */}
-      <header id="hero" className="relative h-screen flex justify-center items-center text-white text-center -mt-20 pt-20 overflow-hidden">
-        <video className="absolute top-0 left-0 w-full h-full object-cover z-0 brightness-[60%]" autoPlay muted loop playsInline>
+    <div className="overflow-hidden bg-[#f7f8fb] text-[#111827]">
+      <header id="hero" className="relative -mt-20 h-[100svh] min-h-[760px] overflow-hidden bg-[#070b2e]">
+        <video className="absolute inset-0 h-full w-full object-cover" autoPlay muted loop playsInline poster="/images/hero-bg.jpg" aria-hidden="true">
           <source src="/images/hero-bg-vid.mp4" type="video/mp4" />
         </video>
-        <div className="relative z-10 hero-content px-5 max-w-2xl text-left md:ml-10">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 text-[#cdad7d]" style={{
-            textShadow: '0 4px 12px rgba(0,0,0,0.5)'
-          }}>
-            WELCOME
-          </h1>
-          <p className="text-xl mb-8 leading-relaxed">
-            Reserve our fully air-conditioned indoor court at GreatLife Fitness.
-            Train, play, and perform better — with full gym facilities available for members.
-          </p>
-          <Link
-            href="#courts"
-            className="inline-block px-12 py-5 text-white font-bold rounded-full transition-all hover:-translate-y-1 hover:shadow-lg"
-            style={{
-              background: 'linear-gradient(to bottom, #15294f, #652f7c)'
-            }}
-          >
-            Book a Court
-          </Link>
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,8,34,.96)_0%,rgba(5,8,34,.78)_42%,rgba(5,8,34,.24)_75%,rgba(5,8,34,.54)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_28%,rgba(239,182,75,.18),transparent_28%)]" />
+
+        <div className="relative z-10 mx-auto flex h-full max-w-[1280px] items-center px-6 pt-24 md:px-10 lg:px-16">
+          <div className="max-w-3xl pb-24" data-reveal>
+            <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-[#f4c46b] backdrop-blur-md">
+              <span className="h-2 w-2 rounded-full bg-[#f4c46b] shadow-[0_0_18px_#f4c46b]" />
+              Indoor courts · Urdaneta City
+            </div>
+            <h1 className="max-w-3xl text-balance text-5xl font-black leading-[0.96] tracking-[-0.055em] text-white sm:text-6xl md:text-7xl lg:text-[5.7rem]">
+              Your game starts <span className="text-[#f4c46b]">here.</span>
+            </h1>
+            <p className="mt-7 max-w-xl text-lg leading-8 text-white/72 md:text-xl">
+              Reserve your court in minutes, train in a complete fitness facility, and show up ready to play.
+            </p>
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+              <Link href="#courts" className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#f4c46b] px-7 font-extrabold text-[#10142f] transition hover:-translate-y-0.5 hover:bg-[#ffd889] hover:shadow-[0_16px_45px_rgba(244,196,107,.25)]">
+                Choose a court <span className="transition-transform group-hover:translate-x-1" aria-hidden="true">→</span>
+              </Link>
+              <Link href="#about" className="inline-flex min-h-14 items-center justify-center rounded-full border border-white/20 bg-white/8 px-7 font-bold text-white backdrop-blur-md transition hover:bg-white/15">
+                Explore the facility
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute inset-x-0 bottom-0 z-10 border-t border-white/10 bg-[#080d34]/75 backdrop-blur-xl">
+          <div className="mx-auto grid max-w-[1280px] grid-cols-1 divide-y divide-white/10 px-6 sm:grid-cols-3 sm:divide-x sm:divide-y-0 md:px-10 lg:px-16">
+            {[
+              ['Open daily', 'Weekdays from 6:00 AM'],
+              ['Simple booking', 'Request a slot in minutes'],
+              ['Pay at the venue', 'Convenient cash payment'],
+            ].map(([title, detail]) => (
+              <div key={title} className="py-4 sm:px-7 sm:py-5 first:pl-0">
+                <p className="font-bold text-white">{title}</p>
+                <p className="mt-1 text-sm text-white/55">{detail}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </header>
 
-      {/* About Section */}
-      <section id="about" className="relative py-24 px-[8%] my-24 flex flex-col md:flex-row items-center justify-between gap-12 overflow-hidden min-h-[600px]">
-        {/* Background Strip */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[55%] md:h-[65%] z-0">
-          <div className="w-full h-full bg-[url('/images/sceneric.png')] bg-cover bg-center bg-no-repeat"></div>
-          <div className="absolute inset-0 bg-blue-900/40"></div>
-        </div>
-
-        <div className="relative z-10 flex-1 text-white">
-          <h2 className="text-4xl md:text-5xl font-bold mb-8">About Us</h2>
-          <p className="text-lg leading-relaxed mb-8 max-w-lg">
-            At GreatLife Fitness, we provide a complete training environment for players and fitness enthusiasts.
-            Our indoor basketball court is supported by modern gym equipment designed for strength, conditioning,
-            and recovery before and after every game. This combination allows athletes to train, play,
-            and improve — all in one place.
-          </p>
-          <Link
-            href="#contact"
-            className="inline-block px-12 py-4 bg-white text-black font-medium rounded-full transition-all hover:scale-110"
-            style={{ background: 'linear-gradient(to bottom, #396ed0, #b66ed4)' }}
-          >
-            Get in Touch
-          </Link>
-        </div>
-
-        <div className="relative z-10 flex-1 flex justify-center">
-          <div className="w-[80%] md:w-[70%] h-[400px] md:h-[600px] rounded-2xl overflow-hidden shadow-2xl">
-            <video autoPlay loop muted playsInline className="w-full h-full object-cover">
-              <source src="/images/video.mp4" type="video/mp4" />
-            </video>
-          </div>
-        </div>
-      </section>
-
-      {/* Services Section */}
-      <section id="why" className="relative pt-20 pb-32">
-        <div className="relative py-20 px-8 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "linear-gradient(rgba(0, 0, 100, 0.5), rgba(0, 0, 100, 0.6)), url('/images/sceneric.png')" }}>
-          <h3 className="text-center text-4xl mb-12 text-[#cdad7d] js-animate-on-scroll">More Than Just a Court</h3>
-          <div className="flex flex-wrap justify-center gap-12 max-w-6xl mx-auto">
-            <div className="border-2 border-[#cdad7d] p-6 w-72 h-80 transition-all js-animate-on-scroll why-us-card">
-              <p className="text-white text-lg leading-relaxed">
-                Train in a motivating environment.<br /><br />
-                Our facility offers a scenic and comfortable space that keeps you focused, energized, and ready to perform at your best.
-              </p>
+      <main>
+        <section id="about" className="mx-auto grid max-w-[1280px] gap-14 px-6 py-24 md:px-10 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-16 lg:py-32">
+          <div className="relative min-h-[520px]" data-reveal>
+            <div className="absolute left-0 top-0 h-[86%] w-[78%] overflow-hidden rounded-[2rem]">
+              <Image src="/images/gym.jpg" alt="GreatLife Fitness gym facility" fill className="object-cover" sizes="(max-width: 1024px) 75vw, 38vw" />
             </div>
-            <div className="border-2 border-[#cdad7d] p-6 w-72 h-80 transition-all js-animate-on-scroll why-us-card">
-              <p className="text-white text-lg leading-relaxed">
-                Support beyond the game.<br /><br />
-                Our friendly staff is always available to assist you before and after your court sessions, ensuring a smooth and comfortable experience.
-              </p>
+            <div className="absolute bottom-0 right-0 h-[48%] w-[53%] overflow-hidden rounded-[1.6rem] border-[8px] border-[#f7f8fb] shadow-2xl">
+              <Image src="/images/bbcourt.jpg" alt="GreatLife indoor court" fill className="object-cover" sizes="(max-width: 1024px) 50vw, 28vw" />
             </div>
-            <div className="border-2 border-[#cdad7d] p-6 w-72 h-80 transition-all js-animate-on-scroll why-us-card">
-              <p className="text-white text-lg leading-relaxed">
-                Complete training facilities.<br /><br />
-                Strength, cardio, and conditioning equipment are available to support your preparation and recovery alongside court use.
-              </p>
+            <div className="absolute bottom-5 left-5 rounded-2xl bg-[#101641] px-5 py-4 text-white shadow-xl">
+              <p className="text-2xl font-black text-[#f4c46b]">3 courts</p>
+              <p className="text-sm text-white/60">One complete facility</p>
             </div>
           </div>
-        </div>
 
-        {/* Carousel Section */}
-        <div className="mt-24 px-8">
-          <h3 className="text-center text-3xl mb-12 text-gray-800 js-animate-on-scroll">What else we offer...</h3>
-          <div className="carousel-container">
-            <div className="carousel">
-              <div className="carousel-track">
-                {facilityImages.map((img, i) => (
-                  <div key={`group1-${i}`} className="carousel-card relative">
-                    <Image src={`/images/${img}`} alt={`Facility ${i}`} fill className="object-cover rounded-xl" />
-                  </div>
-                ))}
+          <div data-reveal>
+            <p className="section-kicker">About GreatLife</p>
+            <h2 className="section-title mt-4">More than a place to work out.</h2>
+            <p className="mt-7 text-lg leading-8 text-slate-600">
+              GreatLife Fitness brings indoor court sports and full gym training together under one roof. Build strength, run a game, and recover without having to move between facilities.
+            </p>
+            <div className="mt-9 grid grid-cols-2 gap-4">
+              <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                <p className="text-2xl font-black text-[#171d53]">Air-conditioned</p>
+                <p className="mt-1 text-sm text-slate-500">Comfort in every session</p>
               </div>
-              <div className="carousel-track" aria-hidden="true">
-                {facilityImages.map((img, i) => (
-                  <div key={`group2-${i}`} className="carousel-card relative">
-                    <Image src={`/images/${img}`} alt={`Facility ${i}`} fill className="object-cover rounded-xl" />
-                  </div>
-                ))}
+              <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                <p className="text-2xl font-black text-[#171d53]">All-in-one</p>
+                <p className="mt-1 text-sm text-slate-500">Train, play, and recover</p>
               </div>
             </div>
+            <Link href="#contact" className="mt-9 inline-flex items-center gap-2 font-extrabold text-[#171d53] hover:text-[#7551bd]">
+              Visit GreatLife <span aria-hidden="true">↗</span>
+            </Link>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Membership & Rates Section */}
-      <section id="membership" className="py-24 px-8 bg-[url('/images/wave-bg.jpg')] bg-cover bg-bottom bg-fixed">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-10 justify-center items-stretch">
-          {/* Rates Text Box */}
-          <div className="bg-white p-10 rounded-[20px] shadow-xl flex-1 max-w-lg js-animate-on-scroll slide-left">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800">Court Booking Rates & Discounts</h2>
-            <ul className="space-y-4 text-lg text-gray-700">
-              <li>🏀 Hourly court reservation available</li>
-              <li>🎓 20% discount for students & senior citizens</li>
-              <li>🏋️ Optional gym access for training & recovery</li>
-              <li>📋 Booking and availability at the front desk</li>
-            </ul>
-          </div>
+        <section id="courts" className="bg-[#0a1038] px-6 py-24 text-white md:px-10 lg:py-32">
+          <div className="mx-auto max-w-[1280px]">
+            <div className="flex flex-col justify-between gap-7 md:flex-row md:items-end" data-reveal>
+              <div>
+                <p className="section-kicker text-[#f4c46b]">Book your session</p>
+                <h2 className="mt-4 max-w-2xl text-4xl font-black tracking-[-0.04em] sm:text-5xl">Pick your court. Bring your game.</h2>
+              </div>
+              <p className="max-w-md text-base leading-7 text-white/58">Choose a sport, select an available date and time, then receive your booking status by email.</p>
+            </div>
 
-          {/* Price Image Box */}
-          <div className="bg-white p-5 rounded-[20px] shadow-xl flex-1 max-w-lg js-animate-on-scroll slide-right flex items-center">
-            <div className="relative w-full h-[300px] md:h-full min-h-[300px]">
-              <Image src="/images/price.jpg" alt="Rates" fill className="object-cover rounded-xl" />
+            <div className="mt-14 grid gap-6 lg:grid-cols-3">
+              {courts.map((court, index) => (
+                <article key={court.name} className="group overflow-hidden rounded-[1.7rem] border border-white/10 bg-white/6" data-reveal style={{ transitionDelay: `${index * 90}ms` }}>
+                  <div className="relative h-64 overflow-hidden">
+                    <Image src={court.image} alt={`${court.name} court`} fill className="object-cover transition duration-700 group-hover:scale-105" sizes="(max-width: 1024px) 100vw, 33vw" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a1038] via-transparent to-transparent" />
+                    <span className="absolute left-5 top-5 rounded-full bg-[#f4c46b] px-3 py-1.5 text-xs font-black uppercase tracking-wider text-[#11152f]">{court.price}</span>
+                  </div>
+                  <div className="p-7">
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#f4c46b]">{court.eyebrow}</p>
+                    <h3 className="mt-3 text-3xl font-black">{court.name}</h3>
+                    <p className="mt-4 min-h-20 leading-7 text-white/58">{court.description}</p>
+                    <Link href={court.href} className="mt-7 flex min-h-13 items-center justify-between rounded-full bg-white px-6 font-extrabold text-[#11152f] transition hover:bg-[#f4c46b]">
+                      Reserve this court <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
+                </article>
+              ))}
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Courts Section */}
-        <section id="courts" className="mt-32 pb-16">
-          <h2 className="text-center text-4xl mb-16 text-[#ffc587] js-animate-on-scroll">Choose your Court</h2>
-          <div className="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto">
-            {[
-              { name: 'Basketball Court', img: 'basketball.jpg', href: '/booking/basketball', desc: 'Nothing beats the energy of a strong basketball community!' },
-              { name: 'Badminton Court', img: 'badminton.jpg', href: '/booking/badminton', desc: 'Smash. Drop. Repeat. Have a blast with friends!' },
-              { name: 'Table Tennis', img: 'tabletennis.jpg', href: '/booking/table-tennis', desc: 'Serve up some fun while breaking a sweat!' }
-            ].map((court) => (
-              <div key={court.name} className="bg-[#e8e4e4] text-black p-6 rounded-xl transition-all hover:-translate-y-2 hover:shadow-[0px_0px_35px_rgba(0,0,0,0.5)] hover:bg-[#08054C] hover:text-white flex flex-col items-center text-center h-full group w-full md:w-[350px]">
-                <div className="relative w-full h-48 mb-6">
-                  <Image src={`/images/${court.img}`} alt={court.name} fill className="object-cover rounded-lg" />
-                </div>
-                <h3 className="text-2xl font-bold mb-3">{court.name}</h3>
-                <p className="flex-grow mb-6 opacity-90">{court.desc}</p>
-                <Link
-                  href={court.href}
-                  className="inline-block px-8 py-3 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 w-3/5"
-                  style={{ background: 'linear-gradient(to bottom, #1e3c72, #8e44ad)' }}
-                >
-                  Book now
-                </Link>
+        <section id="why" className="mx-auto max-w-[1280px] px-6 py-24 md:px-10 lg:px-16 lg:py-32">
+          <div className="max-w-2xl" data-reveal>
+            <p className="section-kicker">The GreatLife rhythm</p>
+            <h2 className="section-title mt-4">Everything you need for a better session.</h2>
+          </div>
+          <div className="mt-14 grid gap-px overflow-hidden rounded-[1.7rem] border border-slate-200 bg-slate-200 md:grid-cols-3" data-reveal>
+            {amenities.map((item) => (
+              <div key={item.number} className="bg-white p-8 lg:p-10">
+                <p className="text-sm font-black text-[#8260c7]">{item.number}</p>
+                <h3 className="mt-10 text-3xl font-black text-[#11172f]">{item.title}</h3>
+                <p className="mt-4 leading-7 text-slate-600">{item.text}</p>
               </div>
             ))}
           </div>
         </section>
-      </section>
+
+        <section className="pb-24 lg:pb-32" aria-label="Facility gallery">
+          <div className="mb-10 px-6 text-center md:px-10" data-reveal>
+            <p className="section-kicker">Inside GreatLife</p>
+            <h2 className="mt-3 text-3xl font-black tracking-[-0.03em] text-[#11172f] sm:text-4xl">A space built to keep you moving.</h2>
+          </div>
+          <div className="gallery-rail">
+            {[...gallery, ...gallery].map((item, index) => (
+              <div key={`${item.src}-${index}`} className="relative h-72 w-[min(78vw,420px)] shrink-0 overflow-hidden rounded-[1.5rem]">
+                <Image src={item.src} alt={index < gallery.length ? item.alt : ''} fill className="object-cover" sizes="420px" />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="membership" className="px-6 pb-24 md:px-10 lg:px-16 lg:pb-32">
+          <div className="relative mx-auto max-w-[1152px] overflow-hidden rounded-[2rem] bg-[#6d4ab1] px-7 py-14 text-center text-white shadow-[0_30px_80px_rgba(64,42,118,.25)] sm:px-12 lg:py-20" data-reveal>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(255,255,255,.18),transparent_28%),radial-gradient(circle_at_90%_90%,rgba(244,196,107,.22),transparent_30%)]" />
+            <div className="relative z-10 mx-auto max-w-2xl">
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#ffe09e]">Ready when you are</p>
+              <h2 className="mt-5 text-4xl font-black tracking-[-0.045em] sm:text-5xl">Make your next session count.</h2>
+              <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-white/75">Select a court now and we’ll keep the booking process simple from request to approval.</p>
+              <Link href="#courts" className="mt-9 inline-flex min-h-14 items-center justify-center rounded-full bg-[#f4c46b] px-8 font-extrabold text-[#11152f] transition hover:-translate-y-0.5 hover:bg-[#ffdda0]">
+                Book a court
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

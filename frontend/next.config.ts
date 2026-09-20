@@ -1,10 +1,22 @@
 import type { NextConfig } from "next";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const backendOrigin = (process.env.BACKEND_ORIGIN || 'http://localhost:5000').replace(/\/+$/, '');
+const frontendRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  reactCompiler: true,
+  reactCompiler: false,
   turbopack: {
-    root: __dirname,
+    root: frontendRoot,
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${backendOrigin}/api/:path*`,
+      },
+    ];
   },
   images: {
     remotePatterns: [
@@ -17,6 +29,18 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'www.gstatic.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.pinimg.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.kym-cdn.com',
         port: '',
         pathname: '/**',
       },
